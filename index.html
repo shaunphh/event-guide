@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Generate Alternative Dublin's weekly Instagram Event Guide from structured event data."
+    />
+    <title>Alternative Dublin — Event Guide Generator</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+    ></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="app-brand" href="#top" aria-label="Alternative Dublin Event Guide Generator">
+        <span class="app-brand__mark" aria-hidden="true">AD</span>
+        <span>
+          <strong>Alternative Dublin</strong>
+          <small>Event Guide Generator</small>
+        </span>
+      </a>
+      <span class="version-pill">Prototype 01</span>
+    </header>
+
+    <main id="top" class="workspace">
+      <aside class="controls" aria-label="Guide controls">
+        <section class="panel source-panel" aria-labelledby="source-title">
+          <div class="panel__heading">
+            <div>
+              <span class="eyebrow">Source</span>
+              <h1 id="source-title">Weekly events</h1>
+            </div>
+            <span id="source-badge" class="status-badge status-badge--loading">Connecting</span>
+          </div>
+
+          <div class="source-actions">
+            <button id="load-sheet" class="button button--primary" type="button">
+              <span>Load Google Sheet</span>
+            </button>
+            <button id="refresh-sheet" class="button button--icon" type="button" aria-label="Refresh data">
+              ↻
+            </button>
+          </div>
+          <p id="source-message" class="source-message" role="status" aria-live="polite">
+            Checking the public Sheet…
+          </p>
+
+          <div id="data-inspector" class="data-inspector" hidden>
+            <div class="data-totals">
+              <span><strong id="rows-found">0</strong> rows found</span>
+              <span class="data-totals__valid"><strong id="events-valid">0</strong> events valid</span>
+              <span><strong id="rows-ignored">0</strong> rows ignored</span>
+            </div>
+            <ul id="day-counts" class="day-counts" aria-label="Valid events by day"></ul>
+          </div>
+
+          <details id="csv-fallback" class="csv-fallback">
+            <summary>Use a CSV instead</summary>
+            <div class="csv-fallback__body">
+              <label class="file-drop" for="csv-file">
+                <span>Choose CSV file</span>
+                <small>Google Sheets → File → Download → CSV</small>
+              </label>
+              <input id="csv-file" class="visually-hidden" type="file" accept=".csv,text/csv" />
+              <label class="field-label" for="csv-paste">Or paste CSV</label>
+              <textarea
+                id="csv-paste"
+                rows="5"
+                placeholder="DATE,NAME,LOCATION,START TIME…"
+                spellcheck="false"
+              ></textarea>
+              <button id="load-pasted-csv" class="button button--secondary" type="button">
+                Load pasted CSV
+              </button>
+            </div>
+          </details>
+        </section>
+
+        <section class="panel" aria-labelledby="days-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Include</span>
+              <h2 id="days-title">Days</h2>
+            </div>
+            <div class="text-actions">
+              <button id="select-all-days" type="button">All</button>
+              <span aria-hidden="true">/</span>
+              <button id="select-no-days" type="button">None</button>
+            </div>
+          </div>
+          <div id="day-filters" class="day-filters" aria-live="polite">
+            <span class="muted">Days appear after loading data.</span>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="layout-title">
+          <span class="eyebrow">Layout</span>
+          <h2 id="layout-title">Page settings</h2>
+
+          <fieldset class="segmented-field">
+            <legend>Events per page</legend>
+            <div class="segmented-control">
+              <label>
+                <input type="radio" name="page-mode" value="auto" checked />
+                <span>Auto</span>
+              </label>
+              <label>
+                <input type="radio" name="page-mode" value="manual" />
+                <span>Manual cap</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label id="manual-limit-field" class="number-field" for="manual-limit" hidden>
+            <span>Maximum events per page</span>
+            <input id="manual-limit" type="number" min="1" max="30" value="8" inputmode="numeric" />
+            <small>Wrapped events still move early if they run out of room.</small>
+          </label>
+
+          <div class="toggle-list">
+            <label class="toggle-row">
+              <span>
+                <strong>Show venue</strong>
+                <small>Secondary line</small>
+              </span>
+              <input id="show-venue" type="checkbox" checked />
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Show Instagram</strong>
+                <small>Organiser handle</small>
+              </span>
+              <input id="show-instagram" type="checkbox" checked />
+            </label>
+          </div>
+        </section>
+
+        <section class="generation-summary" aria-labelledby="generation-title">
+          <span class="eyebrow eyebrow--on-dark">Output</span>
+          <h2 id="generation-title"><span id="selected-event-count">0</span> events <b>→</b> <span id="page-count">0</span> pages</h2>
+          <p id="integrity-status" class="integrity-status">Waiting for event data</p>
+          <div class="generation-actions">
+            <button id="generate-guide" class="button button--yellow" type="button" disabled>
+              Generate guide
+            </button>
+            <button id="export-all" class="button button--dark-outline" type="button" disabled>
+              Export all (.zip)
+            </button>
+          </div>
+          <p id="export-status" class="export-status" role="status" aria-live="polite"></p>
+        </section>
+      </aside>
+
+      <section class="preview-area" aria-labelledby="preview-title">
+        <div class="preview-heading">
+          <div>
+            <span class="eyebrow">1080 × 1350 px</span>
+            <h2 id="preview-title">Carousel preview</h2>
+          </div>
+          <span id="preview-page-count" class="preview-count">No pages</span>
+        </div>
+
+        <div id="preview-grid" class="preview-grid" aria-live="polite">
+          <div class="empty-state">
+            <span class="empty-state__number">01</span>
+            <h3>Load the Sheet to generate the guide.</h3>
+            <p>Every page will appear here at preview scale.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="measure-stage" class="measure-stage" aria-hidden="true"></div>
+    <div id="export-stage" class="export-stage" aria-hidden="true"></div>
+  </body>
+</html>
+
