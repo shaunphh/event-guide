@@ -13,33 +13,47 @@ import {
   validatePagination,
 } from "./core.js";
 
-// Change the fixed canvas, content area, type scale, and spacing here.
+function readCssToken(styles, token) {
+  const value = styles.getPropertyValue(token).trim();
+  if (!value) throw new Error(`Missing required design token: ${token}`);
+  return value;
+}
+
+function readCssPixels(styles, token) {
+  const value = Number.parseFloat(readCssToken(styles, token));
+  if (!Number.isFinite(value)) throw new Error(`Invalid pixel design token: ${token}`);
+  return value;
+}
+
+// styles.css is the single source of truth for canvas, type, spacing, and color tokens.
+const designStyles = getComputedStyle(document.documentElement);
 export const DESIGN = Object.freeze({
-  pageWidth: 1080,
-  pageHeight: 1350,
-  paddingX: 50,
-  paddingTop: 50,
-  paddingBottom: 50,
-  footerHeight: 62,
-  eventGap: 29,
-  timeWidth: 89,
-  columnGap: 32,
-  eventTitleSize: 44,
-  eventMetaSize: 38,
-  titleWidth: 539,
-  colors: {
-    background: "#f0f0f0",
-    ink: "#101010",
-    grey: "#7f7c7c",
-    yellow: "#fde901",
-    footerInk: "#1d1e19",
-  },
+  pageWidth: readCssPixels(designStyles, "--guide-width"),
+  pageHeight: readCssPixels(designStyles, "--guide-height"),
+  paddingX: readCssPixels(designStyles, "--guide-padding-x"),
+  paddingTop: readCssPixels(designStyles, "--guide-padding-top"),
+  paddingBottom: readCssPixels(designStyles, "--guide-padding-bottom"),
+  footerHeight: readCssPixels(designStyles, "--guide-footer-height"),
+  eventGap: readCssPixels(designStyles, "--guide-event-gap"),
+  timeWidth: readCssPixels(designStyles, "--guide-time-width"),
+  columnGap: readCssPixels(designStyles, "--guide-column-gap"),
+  eventTitleSize: readCssPixels(designStyles, "--guide-event-title-size"),
+  eventMetaSize: readCssPixels(designStyles, "--guide-event-meta-size"),
+  titleWidth: readCssPixels(designStyles, "--guide-title-width"),
+  colors: Object.freeze({
+    background: readCssToken(designStyles, "--guide-background"),
+    ink: readCssToken(designStyles, "--guide-ink"),
+    grey: readCssToken(designStyles, "--guide-grey"),
+    yellow: readCssToken(designStyles, "--guide-yellow"),
+    footerInk: readCssToken(designStyles, "--guide-footer-ink"),
+  }),
 });
 
 const SHEET = Object.freeze({
   id: "1rXUChbT3TuOI3b7NaXpXudph96BhLCfEneSjcGW6kp4",
-  gid: "162101761",
 });
+const DEFAULT_SHEET_GID = "170814515";
+const SHEET_GID_STORAGE_KEY = "alternative-dublin-event-guide-sheet-gid";
 
 const state = {
   dataset: null,
@@ -53,6 +67,7 @@ const state = {
   refreshedAt: null,
   dateRisk: null,
   datesConfirmed: false,
+  sheetGid: DEFAULT_SHEET_GID,
   generationToken: 0,
   loadToken: 0,
 };
@@ -61,6 +76,7 @@ const byId = (id) => document.getElementById(id);
 const DOM = {
   loadSheet: byId("load-sheet"),
   refreshSheet: byId("refresh-sheet"),
+  sheetGid: byId("sheet-gid"),
   sourceBadge: byId("source-badge"),
   sourceMessage: byId("source-message"),
   dataInspector: byId("data-inspector"),
@@ -99,30 +115,6 @@ const DOM = {
 
 let generationTimer = 0;
 
-function applyDesignTokens() {
-  const root = document.documentElement.style;
-  const pixels = {
-    "--guide-width": DESIGN.pageWidth,
-    "--guide-height": DESIGN.pageHeight,
-    "--guide-padding-x": DESIGN.paddingX,
-    "--guide-padding-top": DESIGN.paddingTop,
-    "--guide-padding-bottom": DESIGN.paddingBottom,
-    "--guide-footer-height": DESIGN.footerHeight,
-    "--guide-event-gap": DESIGN.eventGap,
-    "--guide-time-width": DESIGN.timeWidth,
-    "--guide-column-gap": DESIGN.columnGap,
-    "--guide-event-title-size": DESIGN.eventTitleSize,
-    "--guide-event-meta-size": DESIGN.eventMetaSize,
-    "--guide-title-width": DESIGN.titleWidth,
-  };
-  Object.entries(pixels).forEach(([token, value]) => root.setProperty(token, `${value}px`));
-  root.setProperty("--guide-background", DESIGN.colors.background);
-  root.setProperty("--guide-ink", DESIGN.colors.ink);
-  root.setProperty("--guide-grey", DESIGN.colors.grey);
-  root.setProperty("--guide-yellow", DESIGN.colors.yellow);
-  root.setProperty("--guide-footer-ink", DESIGN.colors.footerInk);
-}
-
 function setSourceState(kind, badge, message) {
   DOM.sourceBadge.className = `status-badge status-badge--${kind}`;
   DOM.sourceBadge.textContent = badge;
@@ -130,7 +122,42 @@ function setSourceState(kind, badge, message) {
   DOM.sourceMessage.classList.toggle("source-message--error", kind === "error");
 }
 
-function loadSheetViaGviz() {
+function parseSheetGid(value) {
+  const input = String(value ?? "").trim();
+  if (/^\d+$/.test(input)) return input;
+
+  try {
+    const url = new URL(input);
+    if (!url.pathname.includes(`/spreadsheets/d/${SHEET.id}/`)) {
+      throw new Error("That URL is for a different Google Sheet.");
+    }
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+    const gid = url.searchParams.get("gid") || hashParams.get("gid") || "";
+    if (/^\d+$/.test(gid)) return gid;
+  } catch (error) {
+    if (error.message === "That URL is for a different Google Sheet.") throw error;
+  }
+
+  throw new Error("Enter the tab GID number, or paste a tab URL from this Google Sheet.");
+}
+
+function restoreSheetGid() {
+  try {
+    return parseSheetGid(window.localStorage.getItem(SHEET_GID_STORAGE_KEY) || DEFAULT_SHEET_GID);
+  } catch {
+    return DEFAULT_SHEET_GID;
+  }
+}
+
+function saveSheetGid(gid) {
+  try {
+    window.localStorage.setItem(SHEET_GID_STORAGE_KEY, gid);
+  } catch {
+    // The input still works when browser storage is unavailable.
+  }
+}
+
+function loadSheetViaGviz(gid) {
   return new Promise((resolve, reject) => {
     const callbackName = `__eventGuide_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement("script");
@@ -153,17 +180,17 @@ function loadSheetViaGviz() {
     };
 
     const tqx = `out:json;responseHandler:${callbackName}`;
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET.id}/gviz/tq?gid=${SHEET.gid}&headers=1&tqx=${encodeURIComponent(tqx)}&t=${Date.now()}`;
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET.id}/gviz/tq?gid=${gid}&headers=1&tqx=${encodeURIComponent(tqx)}&t=${Date.now()}`;
     script.onerror = () => finish(new Error("Google's public GViz endpoint was blocked."));
     script.referrerPolicy = "no-referrer";
     document.head.appendChild(script);
   });
 }
 
-async function loadSheetViaCsv() {
+async function loadSheetViaCsv(gid) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 7000);
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET.id}/export?format=csv&gid=${SHEET.gid}&t=${Date.now()}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET.id}/export?format=csv&gid=${gid}&t=${Date.now()}`;
   try {
     const response = await fetch(url, { cache: "no-store", signal: controller.signal });
     if (!response.ok) throw new Error(`Google returned ${response.status}.`);
@@ -585,6 +612,7 @@ async function capturePageCanvas(index, scale = readExportScale()) {
   clone.style.removeProperty("--preview-scale");
   DOM.exportStage.replaceChildren(clone);
   try {
+    await waitForFonts();
     await waitForImages(clone);
     const canvas = await window.html2canvas(clone, {
       backgroundColor: DESIGN.colors.background,
@@ -715,15 +743,27 @@ function renderLoadError(error) {
   DOM.dataInspector.hidden = !state.dataset;
   DOM.loadSheet.disabled = false;
   DOM.refreshSheet.disabled = false;
+  DOM.sheetGid.disabled = false;
   syncExportControls();
 }
 
 async function loadGoogleSheet() {
+  let gid;
+  try {
+    gid = parseSheetGid(DOM.sheetGid.value);
+  } catch (error) {
+    setSourceState("error", "Check tab", error.message);
+    DOM.sheetGid.focus();
+    return;
+  }
+
   const loadToken = ++state.loadToken;
   state.loading = true;
   DOM.loadSheet.disabled = true;
   DOM.refreshSheet.disabled = true;
-  setSourceState("loading", "Connecting", "Reading the public Google Sheet…");
+  DOM.sheetGid.disabled = true;
+  DOM.sheetGid.value = gid;
+  setSourceState("loading", "Connecting", `Reading Google Sheet tab ${gid}…`);
 
   try {
     let table;
@@ -731,21 +771,23 @@ async function loadGoogleSheet() {
     try {
       // JSONP is a public Google GViz endpoint that works from a static Pages origin.
       // It also retains the year hidden by the Sheet's mm/dd display format.
-      table = await loadSheetViaGviz();
+      table = await loadSheetViaGviz(gid);
     } catch (gvizError) {
       transport = "CSV";
       try {
-        table = await loadSheetViaCsv();
+        table = await loadSheetViaCsv(gid);
       } catch (csvError) {
         throw new Error(`${gvizError.message} CSV fallback also failed (${csvError.message}).`);
       }
     }
 
     if (loadToken !== state.loadToken) return;
+    state.sheetGid = gid;
+    saveSheetGid(gid);
     setDataset(normalizeRows(table), {
       badge: "Sheet connected",
-      message: `Loaded anonymously through Google ${transport}. No sign-in required.`,
-      source: `Google Sheet · ${transport}`,
+      message: `Loaded tab ${gid} anonymously through Google ${transport}. No sign-in required.`,
+      source: `Google Sheet tab ${gid} · ${transport}`,
     });
   } catch (error) {
     if (loadToken !== state.loadToken) return;
@@ -767,6 +809,7 @@ function setDataset(dataset, source) {
   state.selectedDates = new Set(groupEventsByDay(dataset.events).map((group) => group.key));
   DOM.loadSheet.disabled = false;
   DOM.refreshSheet.disabled = false;
+  DOM.sheetGid.disabled = false;
   const refreshLabel = source.source.startsWith("Google Sheet") ? "Sheet refreshed" : "CSV loaded";
   setSourceState("success", source.badge, `${source.message} ${refreshLabel} ${formatRefreshTime(state.refreshedAt)}.`);
   renderInspector();
@@ -796,6 +839,11 @@ function bindControls() {
   DOM.refreshSheet.addEventListener("click", loadGoogleSheet);
   DOM.generateGuide.addEventListener("click", generateGuide);
   DOM.exportAll.addEventListener("click", exportAllPages);
+  DOM.sheetGid.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    loadGoogleSheet();
+  });
 
   DOM.csvFile.addEventListener("change", async (event) => {
     const [file] = event.target.files || [];
@@ -846,6 +894,7 @@ function getGuideStatus() {
   const exportScale = readExportScale();
   return {
     source: state.source,
+    sheetGid: state.sheetGid,
     rowsFound: state.dataset?.rowsFound || 0,
     validEvents: state.events.length,
     ignoredRows: state.dataset?.ignored.length || 0,
@@ -955,7 +1004,8 @@ function registerDebugSurface() {
 }
 
 async function initialize() {
-  applyDesignTokens();
+  state.sheetGid = restoreSheetGid();
+  DOM.sheetGid.value = state.sheetGid;
   bindControls();
   registerDebugSurface();
   registerWebMcpTools();

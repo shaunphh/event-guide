@@ -10,6 +10,33 @@ const WEEKDAYS = [
 
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
+const MONTH_LOOKUP = Object.freeze({
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+});
+
 export function parseCsv(input) {
   const text = String(input ?? "").replace(/^\uFEFF/, "");
   const rows = [];
@@ -136,6 +163,32 @@ function numericDateParts(value) {
   };
 }
 
+function isoDateParts(value) {
+  const match = String(value).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s].*)?$/);
+  if (!match) return null;
+  return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
+}
+
+function namedDateParts(value) {
+  const match = String(value)
+    .trim()
+    .match(
+      /^(?:(?:sun(?:day)?|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?)\s*,?\s*)?(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)(?:\s+(\d{4}))?$/i,
+    );
+  if (!match) return null;
+  const month = MONTH_LOOKUP[match[2].toLowerCase()];
+  if (!month) return null;
+  return { day: Number(match[1]), month, year: match[3] ? Number(match[3]) : null };
+}
+
+function strictDateParts(value) {
+  return isoDateParts(value) || numericDateParts(value) || namedDateParts(value);
+}
+
+function looksLikeDate(value) {
+  return Boolean(parseGoogleDate(value) || strictDateParts(value));
+}
+
 function weekdayFromHeader(header) {
   const normalized = String(header ?? "").toLowerCase();
   return WEEKDAYS.findIndex((weekday) => normalized.includes(weekday));
@@ -144,7 +197,7 @@ function weekdayFromHeader(header) {
 function inferYear(firstDateValue, dateContext, now) {
   const googleDate = parseGoogleDate(firstDateValue);
   if (googleDate) return googleDate.getFullYear();
-  const parts = numericDateParts(firstDateValue);
+  const parts = strictDateParts(firstDateValue);
   if (!parts) return now.getFullYear();
   if (parts.year) return parts.year;
 
@@ -163,12 +216,32 @@ function inferYear(firstDateValue, dateContext, now) {
 function parseDateValue(value, yearHint) {
   const googleDate = parseGoogleDate(value);
   if (googleDate) return googleDate;
-  const parts = numericDateParts(value);
+  const parts = strictDateParts(value);
   if (parts) return makeDate(parts.year ?? yearHint, parts.month, parts.day);
   const timestamp = Date.parse(String(value));
   if (Number.isNaN(timestamp)) return null;
   const parsed = new Date(timestamp);
   return makeDate(parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate());
+}
+
+function inferDateColumn(headers, rows, titleIndex) {
+  let bestIndex = -1;
+  let bestScore = 0;
+  headers.forEach((_, columnIndex) => {
+    if (columnIndex === titleIndex) return;
+    const score = rows.slice(0, 100).reduce((total, row) => total + (looksLikeDate(cell(row, columnIndex)) ? 1 : 0), 0);
+    if (score > bestScore) {
+      bestIndex = columnIndex;
+      bestScore = score;
+    }
+  });
+  return bestIndex;
+}
+
+function isWeekdayLabel(value) {
+  return /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s*\(\d+\))?$/i.test(
+    String(value ?? "").trim(),
+  );
 }
 
 function toDateKey(date) {
@@ -216,17 +289,19 @@ function validHttpUrl(value) {
 
 export function normalizeRows({ headers, rows }, options = {}) {
   const indices = mapHeaders(headers);
+  if (indices.date < 0) indices.date = inferDateColumn(headers, rows, indices.title);
   if (indices.date < 0 || indices.title < 0) {
-    throw new Error("The CSV needs a date column and a name/title column.");
+    throw new Error("The CSV needs a date column (or dated weekday rows) and a name/title column.");
   }
 
   let firstWeekdaySection = "";
+  let sectionDate = "";
   const candidateRows = [];
   rows.forEach((row, index) => {
     if (!row.some((value) => String(value ?? "").trim())) return;
     const dateValue = cell(row, indices.date);
+    const titleValue = cell(row, indices.title);
     const otherValues = [
-      indices.title,
       indices.venue,
       indices.time,
       indices.url,
@@ -237,16 +312,18 @@ export function normalizeRows({ headers, rows }, options = {}) {
       indices.whatsNew,
     ].map((columnIndex) => cell(row, columnIndex));
     const isWeekdaySection =
-      /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(dateValue) &&
+      (isWeekdayLabel(dateValue) || isWeekdayLabel(titleValue)) &&
       otherValues.every((value) => !value);
     if (isWeekdaySection) {
-      if (!firstWeekdaySection) firstWeekdaySection = dateValue;
+      if (looksLikeDate(dateValue)) sectionDate = dateValue;
+      if (!firstWeekdaySection) firstWeekdaySection = `${dateValue} ${titleValue}`.trim();
       return;
     }
-    candidateRows.push({ row, sourceRow: index + 2 });
+    candidateRows.push({ row, sourceRow: index + 2, sectionDate });
   });
 
-  const firstDateValue = candidateRows.map(({ row }) => cell(row, indices.date)).find(Boolean) || "";
+  const firstDateValue =
+    candidateRows.map(({ row, sectionDate: rowSectionDate }) => cell(row, indices.date) || rowSectionDate).find(Boolean) || "";
   const now = options.now instanceof Date ? options.now : new Date();
   const dateContext = `${headers[indices.date] || ""} ${firstWeekdaySection}`;
   let yearCursor = inferYear(firstDateValue, dateContext, now);
@@ -256,15 +333,17 @@ export function normalizeRows({ headers, rows }, options = {}) {
   const ignored = [];
   const hasApprovalColumn = indices.approved >= 0;
 
-  candidateRows.forEach(({ row, sourceRow }) => {
+  candidateRows.forEach(({ row, sourceRow, sectionDate: rowSectionDate }) => {
     const enteredDate = cell(row, indices.date);
+    const contextualDate = rowSectionDate || "";
     if (enteredDate) carriedDate = enteredDate;
-    const rawDate = enteredDate || carriedDate;
-    const numeric = numericDateParts(rawDate);
-    if (enteredDate && numeric && !numeric.year) {
-      if (previousMonth !== null && numeric.month < previousMonth - 6) yearCursor += 1;
-      if (previousMonth !== null && numeric.month > previousMonth + 6) yearCursor -= 1;
-      previousMonth = numeric.month;
+    else if (contextualDate) carriedDate = contextualDate;
+    const rawDate = enteredDate || contextualDate || carriedDate;
+    const dateParts = strictDateParts(rawDate);
+    if ((enteredDate || contextualDate) && dateParts && !dateParts.year) {
+      if (previousMonth !== null && dateParts.month < previousMonth - 6) yearCursor += 1;
+      if (previousMonth !== null && dateParts.month > previousMonth + 6) yearCursor -= 1;
+      previousMonth = dateParts.month;
     }
 
     const parsedDate = rawDate ? parseDateValue(rawDate, yearCursor) : null;

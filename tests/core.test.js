@@ -77,6 +77,69 @@ test("GViz conversion retains typed event year and formatted time", () => {
   assert.equal(result.events[0].time, "11:30 AM");
 });
 
+test("new weekly tab layout infers the blank date column and carries weekday dates", () => {
+  const csv = [
+    " ,NAME,LOCATION,START TIME,Instagram name,Approved,19 TOP PICKS",
+    "CLICK HERE FOR EVENT FINDING RESOURCES,,,,,,",
+    '"Mon, 14 Sep",Monday,,,,,',
+    ",Fresh Pasta Making Workshop,Coopers Cross,11:00 AM,@theitalian_pastaproject,TRUE,FALSE",
+    ",Guided Abbey Tour,Meetinghouse Lane,12:30 PM,@cd_heritage,TRUE,TRUE",
+    '"Tue, 15 Sep",Tuesday,,,,,',
+    ",Tuesday Event,Temple Bar,6:00 PM,@example,TRUE,FALSE",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 9, 12) });
+  assert.equal(result.schema.date, 0);
+  assert.equal(result.rowsFound, 4);
+  assert.equal(result.events.length, 3);
+  assert.equal(result.ignored.length, 1);
+  assert.equal(result.events[0].dateKey, "2026-09-14");
+  assert.equal(result.events[0].dateInferred, true);
+  assert.equal(result.events[1].dateKey, "2026-09-14");
+  assert.equal(result.events[2].dateKey, "2026-09-15");
+});
+
+test("new weekly GViz layout retains the typed year from a weekday separator row", () => {
+  const table = gvizTableToRows({
+    status: "ok",
+    table: {
+      cols: [
+        { id: "A", label: "", type: "date" },
+        { id: "B", label: "NAME", type: "string" },
+        { id: "C", label: "LOCATION", type: "string" },
+        { id: "D", label: "START TIME", type: "datetime" },
+        { id: "E", label: "Approved", type: "boolean" },
+      ],
+      rows: [
+        {
+          c: [
+            { v: "Date(2026,8,14)", f: "Mon, 14 Sep" },
+            { v: "Monday" },
+            null,
+            null,
+            null,
+          ],
+        },
+        {
+          c: [
+            null,
+            { v: "Fresh Pasta Making Workshop" },
+            { v: "Coopers Cross" },
+            { v: "Date(1899,11,30,11,0,0)", f: "11:00 AM" },
+            { v: true, f: "TRUE" },
+          ],
+        },
+      ],
+    },
+  });
+
+  const result = normalizeRows(table, { now: new Date(2026, 8, 9, 12) });
+  assert.equal(result.schema.date, 0);
+  assert.equal(result.events.length, 1);
+  assert.equal(result.events[0].dateKey, "2026-09-14");
+  assert.equal(result.events[0].time, "11:00 AM");
+});
+
 test("rows are all included when an Approved column is absent", () => {
   const result = normalizeRows(
     rowsFromCsv("Date,Title,Venue,Time\n2026-09-07,One,Venue A,18:00\n2026-09-08,Two,Venue B,19:00"),

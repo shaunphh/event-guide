@@ -1,3 +1,39 @@
+@font-face {
+  font-family: "Barlow GX";
+  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+
+/*
+ * Export-safe Barlow GX families. The source font uses its original GX
+ * coordinates rather than the later CSS 100–900 weight scale.
+ *
+ * Named weight stops: 71 Regular, 96 Medium, 116 SemiBold, 141 Bold,
+ * 166 ExtraBold, 188 Black. Any number between 22 and 188 is valid. Width is
+ * attached to the font face so html2canvas keeps it; each guide rule below
+ * supplies an editable native weight through the standard font-weight field.
+ */
+@font-face {
+  font-family: "Barlow GX Normal";
+  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
+  font-style: normal;
+  font-weight: 22 188;
+  font-variation-settings: "wdth" 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow GX Condensed";
+  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
+  font-style: normal;
+  font-weight: 22 188;
+  font-variation-settings: "wdth" 300;
+  font-display: swap;
+}
+
 :root {
   --ink: #151512;
   --ink-soft: #34342f;
@@ -14,19 +50,24 @@
   --muted: #74746d;
   --shadow: 0 18px 50px rgba(22, 22, 18, 0.13);
 
-  /* Fixed guide tokens are set from DESIGN in app.js. */
+  /* Edit these tokens to tune the fixed guide; app.js reads the same values for export. */
   --guide-width: 1080px;
   --guide-height: 1350px;
   --guide-padding-x: 50px;
-  --guide-padding-top: 50px;
+  --guide-padding-top: 75px;
   --guide-padding-bottom: 50px;
   --guide-footer-height: 62px;
-  --guide-event-gap: 29px;
+  --guide-event-gap: 32px;
+  --guide-event-gap: 36px;
   --guide-time-width: 89px;
   --guide-column-gap: 32px;
   --guide-event-title-size: 44px;
   --guide-event-meta-size: 38px;
-  --guide-title-width: 539px;
+  --guide-event-title-size: 46px;
+  --guide-event-meta-size: 40px;
+  --guide-event-title-size: 47px;
+  --guide-event-meta-size: 41px;
+  --guide-title-width: 1920px;
   --guide-background: #f0f0f0;
   --guide-ink: #101010;
   --guide-grey: #7f7c7c;
@@ -277,6 +318,18 @@ h2 {
   grid-template-columns: 1fr 48px;
   gap: 8px;
   margin-top: 24px;
+}
+
+.sheet-tab-field {
+  margin-top: 24px;
+}
+
+.sheet-tab-field + .source-actions {
+  margin-top: 12px;
+}
+
+.sheet-tab-field input {
+  font-variant-numeric: tabular-nums;
 }
 
 .button {
@@ -963,7 +1016,8 @@ input[name="export-scale"] + span {
   width: var(--guide-width);
   height: var(--guide-height);
   grid-template-rows: minmax(0, 1fr) var(--guide-footer-height);
-  padding: var(--guide-padding-top) var(--guide-padding-x) var(--guide-padding-bottom);
+  padding: var(--guide-padding-top) var(--guide-padding-x)
+    var(--guide-padding-bottom);
   overflow: hidden;
   color: var(--guide-ink);
   background: var(--guide-background);
@@ -990,17 +1044,19 @@ input[name="export-scale"] + span {
 }
 
 .guide-event__time {
-  display: block;
+  display: grid;
   width: var(--guide-time-width);
   height: 39px;
   margin-top: 9px;
-  padding: 1px 0 0 7px;
+  padding: 0;
+  place-items: center;
   overflow: hidden;
-  text-align: left;
+  text-align: center;
   background: var(--guide-yellow);
   font-family: "Barlow Condensed", sans-serif;
   font-size: 38px;
   font-weight: 800;
+  font-weight: 700;
   line-height: 34px;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -1017,7 +1073,9 @@ input[name="export-scale"] + span {
   font-family: "Barlow", Arial, sans-serif;
   font-size: var(--guide-event-title-size);
   font-weight: 900;
+  font-weight: 800;
   line-height: 1;
+  line-height: 1.1;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -1031,13 +1089,18 @@ input[name="export-scale"] + span {
   font-family: "Barlow Condensed", sans-serif;
   font-size: var(--guide-event-meta-size);
   font-weight: 600;
+  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.03em;
 }
 
 .guide-event__instagram {
   font-weight: 600;
+  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.02em;
+  text-transform: lowercase;
 }
 
 .guide-event__meta > span {
@@ -1089,6 +1152,37 @@ input[name="export-scale"] + span {
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
+}
+
+/* These native GX weights can be tuned one unit at a time in preview and export. */
+@supports (font-variation-settings: normal) {
+  .guide-event__time {
+    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
+    font-weight: 129;
+  }
+
+  .guide-event__title {
+    font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
+    font-weight: 154;
+    font-weight: 166;
+  }
+
+  .guide-event__meta,
+  .guide-event__instagram {
+    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
+    font-weight: 84;
+    font-weight: 98;
+  }
+
+  .guide-page__footer-title {
+    font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
+    font-weight: 188;
+  }
+
+  .guide-page__footer-date {
+    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
+    font-weight: 116;
+  }
 }
 
 .measure-stage,

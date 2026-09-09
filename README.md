@@ -4,11 +4,11 @@ A small, static prototype that turns Alternative Dublin's weekly Google Sheet in
 
 ## What it does
 
-- Reads the public Sheet through Google's GViz endpoint without authentication.
+- Reads the selected public Sheet tab through Google's GViz endpoint without authentication; the operator can enter its GID or paste its full tab URL.
 - Falls back to CSV file upload or pasted CSV if Google access is blocked.
 - Maps `DATE`, `NAME`, `LOCATION`, `START TIME`, `EVENT/TICKETS LINK`, `Instagram Link`, `Approved`, and `TOP PICKS` into normalized event records.
 - Includes only rows marked `Approved = TRUE` when that column exists.
-- Carries a blank date down from the previous event, matching the current Sheet's grouped weekday structure.
+- Reads dated weekday separator rows and carries their date through the event rows beneath them.
 - Groups approved events by their actual date and paginates by measured rendered height.
 - Audits the output so every selected event appears exactly once.
 - Matches the supplied Alternative Dublin Figma system: 50px margins, 44px Barlow Black titles, compact yellow time badges, and the supplied graffiti Dublin footer mark.
@@ -31,9 +31,11 @@ No install or build step is needed for local development. The two export helpers
 
 ## Change the design
 
-The fixed page measurements and export size live together at the top of `app.js` in `DESIGN`. The application chrome and page visual styles are in `styles.css`; fixed page styles use the `--guide-*` variables.
+The fixed page measurements, type scale, spacing, and colors live in the `--guide-*` variables at the top of `styles.css`. The app reads those same computed tokens for preview scaling, pagination, and export, so CSS is the single source of truth.
 
 Data parsing and normalization are in `core.js`. DOM height measurement, rendering, and export are kept as separate functions in `app.js`.
+
+The guide includes the upstream experimental `BarlowGX.ttf` variable font. Its native axes are `wght 22–188` and `wdth 300–500`. The GX overrides near the bottom of `styles.css` set the title, time, and metadata to in-between weights (`154`, `129`, and `84`) rather than forcing them onto static 100-step weights. Edit those `font-weight` values by single units to tune both the browser preview and PNG export together. Export-safe `@font-face` rules retain the normal/condensed width axis, while the complete Google Fonts static families remain loaded as fallbacks.
 
 ## Tests and build
 
@@ -54,7 +56,8 @@ After pushing to a new GitHub repository, choose **GitHub Actions** as the Pages
 
 - Numeric dates are month/day, as in the current Sheet.
 - GViz typed dates are preferred because they retain the otherwise hidden year.
-- A blank date inherits the most recent explicit date.
+- If the date column has a blank or generated header, the parser identifies it from the dated weekday rows.
+- A blank event date inherits its weekday separator date or the most recent explicit date.
 - A row is valid when it has a parseable date and event name, and is approved when the `Approved` column exists.
 - Ticket fields that are descriptive text rather than an absolute HTTP(S) URL are retained as source text but are not treated as URLs.
 - Missing time is shown as `TBC` rather than interpreted as an all-day event.
