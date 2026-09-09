@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900&family=Barlow+Condensed:wght@500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -32,7 +32,7 @@
           <small>Event Guide Generator</small>
         </span>
       </a>
-      <span class="version-pill">Prototype 01</span>
+      <span class="version-pill">Prototype 1.1</span>
     </header>
 
     <main id="top" class="workspace">
@@ -65,6 +65,23 @@
               <span><strong id="rows-ignored">0</strong> rows ignored</span>
             </div>
             <ul id="day-counts" class="day-counts" aria-label="Valid events by day"></ul>
+
+            <details id="ignored-details" class="ignored-details" hidden>
+              <summary>
+                <span>Review ignored rows</span>
+                <strong id="ignored-detail-count">0</strong>
+              </summary>
+              <ul id="ignored-list" class="ignored-list"></ul>
+            </details>
+
+            <div id="date-check" class="date-check" hidden>
+              <strong>Date check required</strong>
+              <p id="date-check-message"></p>
+              <label class="date-confirmation">
+                <input id="confirm-dates" type="checkbox" />
+                <span>I checked these source dates</span>
+              </label>
+            </div>
           </div>
 
           <details id="csv-fallback" class="csv-fallback">
@@ -130,6 +147,20 @@
             <small>Wrapped events still move early if they run out of room.</small>
           </label>
 
+          <fieldset class="segmented-field">
+            <legend>Export resolution</legend>
+            <div class="segmented-control">
+              <label>
+                <input type="radio" name="export-scale" value="1" checked />
+                <span>1× · 1080 × 1350</span>
+              </label>
+              <label>
+                <input type="radio" name="export-scale" value="2" />
+                <span>2× · 2160 × 2700</span>
+              </label>
+            </div>
+          </fieldset>
+
           <div class="toggle-list">
             <label class="toggle-row">
               <span>
@@ -187,4 +218,3 @@
     <div id="export-stage" class="export-stage" aria-hidden="true"></div>
   </body>
 </html>
-

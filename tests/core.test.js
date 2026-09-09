@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  assessDateRange,
   filenameForPage,
+  formatBadgeTime,
   formatDateHeading,
+  formatFooterDate,
   groupEventsByDay,
   gvizTableToRows,
   normalizeRows,
@@ -33,6 +36,11 @@ test("real Sheet-shaped CSV skips weekday banners and normalizes approved events
   assert.equal(result.rowsFound, 3);
   assert.equal(result.events.length, 2);
   assert.equal(result.ignored.length, 1);
+  assert.deepEqual(result.ignored[0], {
+    sourceRow: 5,
+    title: "Not approved",
+    reason: "not approved",
+  });
   assert.equal(result.events[0].dateKey, "2025-02-10");
   assert.equal(result.events[1].dateKey, "2025-02-10");
   assert.equal(result.events[1].dateInferred, true);
@@ -98,3 +106,28 @@ test("filenames are padded and day-based", () => {
   assert.equal(filenameForPage(16, 17, "TUESDAY"), "17-tuesday.png");
 });
 
+test("guide display formatting matches the compact Figma labels", () => {
+  const monday = new Date(2025, 1, 10, 12);
+  assert.equal(formatFooterDate(monday), "Mon 10 feb");
+  assert.equal(formatBadgeTime("11:30 AM"), "11:30");
+  assert.equal(formatBadgeTime("8:00 PM"), "20:00");
+  assert.equal(formatBadgeTime("12 AM"), "00:00");
+  assert.equal(formatBadgeTime("TBC"), "TBC");
+});
+
+test("date-range safeguard flags stale weeks but allows a current week", () => {
+  const now = new Date(2026, 8, 9, 12);
+  const stale = assessDateRange(
+    [new Date(2025, 1, 10), new Date(2025, 1, 16)].map((date) => ({ date })),
+    now,
+  );
+  assert.equal(stale.requiresConfirmation, true);
+  assert.equal(stale.label, "10–16 Feb 2025");
+  assert.match(stale.reason, /past/);
+
+  const current = assessDateRange(
+    [new Date(2026, 8, 8), new Date(2026, 8, 14)].map((date) => ({ date })),
+    now,
+  );
+  assert.equal(current.requiresConfirmation, false);
+});

@@ -324,6 +324,65 @@ export function formatDateHeading(date) {
   return `${formatDay(date)} ${date.getDate()} ${MONTHS[date.getMonth()]}`;
 }
 
+export function formatFooterDate(date) {
+  return `${formatDayShort(date)} ${date.getDate()} ${MONTHS[date.getMonth()].toLowerCase()}`;
+}
+
+export function formatBadgeTime(value) {
+  const time = String(value ?? "").trim();
+  const meridiem = time.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  if (!meridiem) return time || "TBC";
+  let hours = Number(meridiem[1]) % 12;
+  if (meridiem[3].toUpperCase() === "PM") hours += 12;
+  return `${String(hours).padStart(2, "0")}:${meridiem[2] || "00"}`;
+}
+
+function formatDateRange(minDate, maxDate) {
+  const titleCaseMonth = (month) => month.toLowerCase().replace(/^./, (letter) => letter.toUpperCase());
+  const minMonth = titleCaseMonth(MONTHS[minDate.getMonth()]);
+  const maxMonth = titleCaseMonth(MONTHS[maxDate.getMonth()]);
+  const minDay = minDate.getDate();
+  const maxDay = maxDate.getDate();
+  const minYear = minDate.getFullYear();
+  const maxYear = maxDate.getFullYear();
+  if (minDate.getTime() === maxDate.getTime()) return `${minDay} ${minMonth} ${minYear}`;
+  if (minYear === maxYear && minDate.getMonth() === maxDate.getMonth()) {
+    return `${minDay}–${maxDay} ${maxMonth} ${maxYear}`;
+  }
+  if (minYear === maxYear) return `${minDay} ${minMonth}–${maxDay} ${maxMonth} ${maxYear}`;
+  return `${minDay} ${minMonth} ${minYear}–${maxDay} ${maxMonth} ${maxYear}`;
+}
+
+export function assessDateRange(events, now = new Date()) {
+  const dates = events
+    .map((event) => event?.date)
+    .filter((date) => date instanceof Date && !Number.isNaN(date.getTime()))
+    .sort((a, b) => a - b);
+  if (!dates.length) {
+    return { requiresConfirmation: false, label: "", reason: "", minDate: null, maxDate: null };
+  }
+
+  const minDate = dates[0];
+  const maxDate = dates[dates.length - 1];
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  const day = 24 * 60 * 60 * 1000;
+  const daysFromLatest = Math.round((maxDate.getTime() - today.getTime()) / day);
+  const daysToEarliest = Math.round((minDate.getTime() - today.getTime()) / day);
+  const spanDays = Math.round((maxDate.getTime() - minDate.getTime()) / day);
+  let reason = "";
+  if (daysFromLatest < -14) reason = "These dates are more than two weeks in the past.";
+  else if (daysToEarliest > 90) reason = "These dates are more than 90 days in the future.";
+  else if (spanDays > 31) reason = "The selected dates span more than one month.";
+
+  return {
+    requiresConfirmation: Boolean(reason),
+    label: formatDateRange(minDate, maxDate),
+    reason,
+    minDate,
+    maxDate,
+  };
+}
+
 export function groupEventsByDay(events) {
   const groups = [];
   const byKey = new Map();

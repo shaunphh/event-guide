@@ -1,8 +1,11 @@
 import {
+  assessDateRange,
   filenameForPage,
+  formatBadgeTime,
   formatDateHeading,
   formatDay,
   formatDayShort,
+  formatFooterDate,
   groupEventsByDay,
   gvizTableToRows,
   normalizeRows,
@@ -14,20 +17,22 @@ import {
 export const DESIGN = Object.freeze({
   pageWidth: 1080,
   pageHeight: 1350,
-  paddingX: 86,
-  paddingTop: 76,
-  paddingBottom: 62,
-  headerHeight: 172,
-  footerHeight: 106,
-  eventGap: 24,
-  timeWidth: 154,
-  columnGap: 30,
-  eventTitleSize: 42,
-  eventMetaSize: 24,
+  paddingX: 50,
+  paddingTop: 50,
+  paddingBottom: 50,
+  footerHeight: 62,
+  eventGap: 29,
+  timeWidth: 89,
+  columnGap: 32,
+  eventTitleSize: 44,
+  eventMetaSize: 38,
+  titleWidth: 539,
   colors: {
-    background: "#f3f2ec",
-    ink: "#11110f",
-    yellow: "#f6cf24",
+    background: "#f0f0f0",
+    ink: "#101010",
+    grey: "#7f7c7c",
+    yellow: "#fde901",
+    footerInk: "#1d1e19",
   },
 });
 
@@ -45,6 +50,9 @@ const state = {
   source: "",
   loading: false,
   exporting: false,
+  refreshedAt: null,
+  dateRisk: null,
+  datesConfirmed: false,
   generationToken: 0,
   loadToken: 0,
 };
@@ -60,6 +68,12 @@ const DOM = {
   eventsValid: byId("events-valid"),
   rowsIgnored: byId("rows-ignored"),
   dayCounts: byId("day-counts"),
+  ignoredDetails: byId("ignored-details"),
+  ignoredDetailCount: byId("ignored-detail-count"),
+  ignoredList: byId("ignored-list"),
+  dateCheck: byId("date-check"),
+  dateCheckMessage: byId("date-check-message"),
+  confirmDates: byId("confirm-dates"),
   csvFallback: byId("csv-fallback"),
   csvFile: byId("csv-file"),
   csvPaste: byId("csv-paste"),
@@ -93,18 +107,20 @@ function applyDesignTokens() {
     "--guide-padding-x": DESIGN.paddingX,
     "--guide-padding-top": DESIGN.paddingTop,
     "--guide-padding-bottom": DESIGN.paddingBottom,
-    "--guide-header-height": DESIGN.headerHeight,
     "--guide-footer-height": DESIGN.footerHeight,
     "--guide-event-gap": DESIGN.eventGap,
     "--guide-time-width": DESIGN.timeWidth,
     "--guide-column-gap": DESIGN.columnGap,
     "--guide-event-title-size": DESIGN.eventTitleSize,
     "--guide-event-meta-size": DESIGN.eventMetaSize,
+    "--guide-title-width": DESIGN.titleWidth,
   };
   Object.entries(pixels).forEach(([token, value]) => root.setProperty(token, `${value}px`));
   root.setProperty("--guide-background", DESIGN.colors.background);
   root.setProperty("--guide-ink", DESIGN.colors.ink);
+  root.setProperty("--guide-grey", DESIGN.colors.grey);
   root.setProperty("--guide-yellow", DESIGN.colors.yellow);
+  root.setProperty("--guide-footer-ink", DESIGN.colors.footerInk);
 }
 
 function setSourceState(kind, badge, message) {
@@ -165,6 +181,9 @@ function renderInspector() {
   DOM.eventsValid.textContent = dataset.events.length;
   DOM.rowsIgnored.textContent = dataset.ignored.length;
   DOM.dayCounts.replaceChildren();
+  DOM.ignoredList.replaceChildren();
+  DOM.ignoredDetailCount.textContent = dataset.ignored.length;
+  DOM.ignoredDetails.hidden = dataset.ignored.length === 0;
 
   groupEventsByDay(dataset.events).forEach((group) => {
     const item = document.createElement("li");
@@ -175,6 +194,32 @@ function renderInspector() {
     item.append(day, count);
     DOM.dayCounts.appendChild(item);
   });
+
+  dataset.ignored.forEach((ignored) => {
+    const item = document.createElement("li");
+    const title = document.createElement("strong");
+    const reason = document.createElement("span");
+    title.textContent = ignored.title;
+    reason.textContent = `Sheet row ${ignored.sourceRow} · ${ignored.reason.replace(/^./, (letter) => letter.toUpperCase())}`;
+    item.append(title, reason);
+    DOM.ignoredList.appendChild(item);
+  });
+}
+
+function renderDateCheck(selectedEvents = getSelectedEvents()) {
+  state.dateRisk = assessDateRange(selectedEvents);
+  const risk = state.dateRisk;
+  DOM.dateCheck.hidden = !risk.requiresConfirmation;
+  DOM.confirmDates.checked = state.datesConfirmed;
+  if (risk.requiresConfirmation) {
+    DOM.dateCheckMessage.textContent = `${risk.label}. ${risk.reason} Confirm before exporting.`;
+  } else {
+    DOM.dateCheckMessage.textContent = "";
+  }
+}
+
+function formatRefreshTime(date) {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 function renderDayFilters() {
@@ -220,6 +265,10 @@ function readSettings() {
   };
 }
 
+function readExportScale() {
+  return Number(document.querySelector('input[name="export-scale"]:checked')?.value) === 2 ? 2 : 1;
+}
+
 function getSelectedEvents() {
   return state.events.filter((event) => state.selectedDates.has(event.dateKey));
 }
@@ -231,7 +280,11 @@ function createEventElement(event, settings) {
 
   const time = document.createElement("time");
   time.className = "guide-event__time";
-  time.textContent = event.time;
+  time.textContent = formatBadgeTime(event.time);
+  if (time.textContent !== event.time) {
+    time.title = event.time;
+    time.setAttribute("aria-label", event.time);
+  }
 
   const body = document.createElement("div");
   body.className = "guide-event__body";
@@ -265,42 +318,30 @@ function createGuidePage(page, settings) {
   element.setAttribute("aria-label", `${formatDateHeading(page.date)}, page ${page.dayPage} of ${page.dayPages}`);
   element.dataset.pageIndex = page.globalIndex;
 
-  const header = document.createElement("header");
-  header.className = "guide-page__header";
-  const kicker = document.createElement("div");
-  kicker.className = "guide-page__kicker";
-  const label = document.createElement("span");
-  label.textContent = "Alternative Dublin · Weekly";
-  const edition = document.createElement("span");
-  edition.className = "guide-page__edition";
-  edition.textContent = `${page.dayPage} / ${page.dayPages}`;
-  kicker.append(label, edition);
-  const day = document.createElement("h2");
-  day.className = "guide-page__day";
-  day.textContent = formatDateHeading(page.date);
-  header.append(kicker, day);
-
   const list = document.createElement("div");
   list.className = "guide-page__events";
   page.events.forEach((event) => list.appendChild(createEventElement(event, settings)));
 
   const footer = document.createElement("footer");
   footer.className = "guide-page__footer";
-  const footerTitle = document.createElement("div");
+  const lockup = document.createElement("div");
+  lockup.className = "guide-page__footer-lockup";
+  const mark = document.createElement("img");
+  mark.className = "guide-page__dublin-mark";
+  mark.src = "assets/DublinEventGuide.svg";
+  mark.alt = "Dublin";
+  mark.width = 144;
+  mark.height = 62;
+  const footerTitle = document.createElement("span");
   footerTitle.className = "guide-page__footer-title";
-  footerTitle.append(document.createTextNode("Dublin "));
-  const footerSuffix = document.createElement("span");
-  footerSuffix.textContent = "Event Guide";
-  footerTitle.appendChild(footerSuffix);
-  const pageNumber = document.createElement("div");
-  pageNumber.className = "guide-page__page-number";
-  const pageLabel = document.createElement("span");
-  pageLabel.textContent = "PAGE";
-  const pageValue = document.createElement("strong");
-  pageValue.textContent = String(page.globalIndex + 1).padStart(2, "0");
-  pageNumber.append(pageLabel, pageValue);
-  footer.append(footerTitle, pageNumber);
-  element.append(header, list, footer);
+  footerTitle.textContent = "Event Guide";
+  lockup.append(mark, footerTitle);
+  const footerDate = document.createElement("time");
+  footerDate.className = "guide-page__footer-date";
+  footerDate.dateTime = page.key || "";
+  footerDate.textContent = formatFooterDate(page.date);
+  footer.append(lockup, footerDate);
+  element.append(list, footer);
   return element;
 }
 
@@ -372,6 +413,39 @@ const frameObserver = new ResizeObserver((entries) => {
   entries.forEach((entry) => scalePageFrame(entry.target));
 });
 
+function filenameAtScale(filename, scale = readExportScale()) {
+  return scale === 2 ? filename.replace(/\.png$/i, "@2x.png") : filename;
+}
+
+function canExport() {
+  return Boolean(
+    state.pages.length &&
+      state.integrity?.passed &&
+      !state.exporting &&
+      (!state.dateRisk?.requiresConfirmation || state.datesConfirmed),
+  );
+}
+
+function syncExportControls() {
+  const scale = readExportScale();
+  const enabled = canExport();
+  DOM.exportAll.disabled = !enabled;
+  DOM.generateGuide.disabled = state.exporting || !state.events.length;
+  DOM.exportAll.textContent = scale === 2 ? "Export all @2× (.zip)" : "Export all (.zip)";
+  document.querySelectorAll('input[name="export-scale"]').forEach((input) => {
+    input.disabled = state.exporting;
+  });
+  document.querySelectorAll(".page-card").forEach((card) => {
+    const filename = card.querySelector(".page-card__toolbar span");
+    const button = card.querySelector(".page-card__toolbar button");
+    if (filename?.dataset.baseFilename) filename.textContent = filenameAtScale(filename.dataset.baseFilename, scale);
+    if (button) {
+      button.disabled = !enabled;
+      button.textContent = scale === 2 ? "Export PNG @2×" : "Export PNG";
+    }
+  });
+}
+
 function renderPages(settings) {
   DOM.previewGrid.querySelectorAll(".page-frame").forEach((frame) => frameObserver.unobserve(frame));
   DOM.previewGrid.replaceChildren();
@@ -397,6 +471,7 @@ function renderPages(settings) {
     toolbar.className = "page-card__toolbar";
     const filename = document.createElement("span");
     filename.textContent = page.filename;
+    filename.dataset.baseFilename = page.filename;
     const exportButton = document.createElement("button");
     exportButton.type = "button";
     exportButton.textContent = "Export PNG";
@@ -412,25 +487,41 @@ function renderPages(settings) {
     scalePageFrame(frame);
     frameObserver.observe(frame);
   });
+  syncExportControls();
 }
 
 function updateSummary(selectedEvents) {
+  renderDateCheck(selectedEvents);
   DOM.selectedEventCount.textContent = selectedEvents.length;
   DOM.pageCount.textContent = state.pages.length;
   DOM.previewPageCount.textContent = state.pages.length ? `${state.pages.length} pages` : "No pages";
-  DOM.generateGuide.disabled = !state.events.length;
-  DOM.exportAll.disabled = !state.pages.length || !state.integrity?.passed || state.exporting;
+  syncExportControls();
 
   DOM.integrityStatus.className = "integrity-status";
   if (!selectedEvents.length) {
     DOM.integrityStatus.textContent = "Select one or more days to generate pages.";
   } else if (state.integrity?.passed) {
-    DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} selected events rendered once`;
-    DOM.integrityStatus.classList.add("integrity-status--passed");
+    if (state.dateRisk?.requiresConfirmation && !state.datesConfirmed) {
+      DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} events fit · confirm source dates to export`;
+      DOM.integrityStatus.classList.add("integrity-status--warning");
+    } else {
+      DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} selected events rendered once`;
+      DOM.integrityStatus.classList.add("integrity-status--passed");
+    }
+  } else if (state.integrity?.layoutOverflowPages?.length) {
+    const pages = state.integrity.layoutOverflowPages.map((index) => index + 1).join(", ");
+    DOM.integrityStatus.textContent = `Layout overflow on page ${pages}; export is disabled`;
+    DOM.integrityStatus.classList.add("integrity-status--failed");
   } else {
     DOM.integrityStatus.textContent = `Check failed: ${state.integrity?.rendered || 0} of ${selectedEvents.length} events rendered`;
     DOM.integrityStatus.classList.add("integrity-status--failed");
   }
+}
+
+function auditRenderedLayout() {
+  return [...DOM.previewGrid.querySelectorAll(".guide-page__events")]
+    .filter((list) => list.scrollHeight > list.clientHeight + 1 || list.scrollWidth > list.clientWidth + 1)
+    .map((list) => Number(list.closest(".guide-page")?.dataset.pageIndex));
 }
 
 async function waitForFonts() {
@@ -439,6 +530,24 @@ async function waitForFonts() {
     document.fonts.ready,
     new Promise((resolve) => window.setTimeout(resolve, 3000)),
   ]);
+}
+
+async function waitForImages(root) {
+  const images = [...root.querySelectorAll("img")];
+  await Promise.all(
+    images.map(async (image) => {
+      if (!image.complete) {
+        await new Promise((resolve, reject) => {
+          image.addEventListener("load", resolve, { once: true });
+          image.addEventListener("error", () => reject(new Error("The Dublin footer artwork did not load.")), {
+            once: true,
+          });
+        });
+      }
+      if (!image.naturalWidth) throw new Error("The Dublin footer artwork did not load.");
+      if (image.decode) await image.decode().catch(() => {});
+    }),
+  );
 }
 
 async function generateGuide() {
@@ -452,16 +561,21 @@ async function generateGuide() {
   state.pages = paginateByRenderedHeight(selectedEvents, settings);
   state.integrity = validatePagination(selectedEvents, state.pages);
   renderPages(settings);
+  const overflowingPages = auditRenderedLayout();
+  state.integrity.layoutOverflowPages = overflowingPages;
+  state.integrity.passed = state.integrity.passed && overflowingPages.length === 0;
   updateSummary(selectedEvents);
   registerDebugSurface();
 }
 
 function scheduleGuide() {
   window.clearTimeout(generationTimer);
+  state.integrity = null;
+  syncExportControls();
   generationTimer = window.setTimeout(generateGuide, 80);
 }
 
-async function capturePageCanvas(index) {
+async function capturePageCanvas(index, scale = readExportScale()) {
   if (!window.html2canvas) throw new Error("The PNG export library did not load. Check the connection and try again.");
   const source = DOM.previewGrid.querySelector(`.guide-page[data-page-index="${index}"]`);
   if (!source) throw new Error("That preview page is no longer available.");
@@ -471,18 +585,21 @@ async function capturePageCanvas(index) {
   clone.style.removeProperty("--preview-scale");
   DOM.exportStage.replaceChildren(clone);
   try {
+    await waitForImages(clone);
     const canvas = await window.html2canvas(clone, {
       backgroundColor: DESIGN.colors.background,
       width: DESIGN.pageWidth,
       height: DESIGN.pageHeight,
-      scale: 1,
+      scale,
       useCORS: true,
       logging: false,
       windowWidth: DESIGN.pageWidth,
       windowHeight: DESIGN.pageHeight,
     });
-    if (canvas.width !== DESIGN.pageWidth || canvas.height !== DESIGN.pageHeight) {
-      throw new Error(`Export was ${canvas.width} × ${canvas.height}px instead of ${DESIGN.pageWidth} × ${DESIGN.pageHeight}px.`);
+    const expectedWidth = DESIGN.pageWidth * scale;
+    const expectedHeight = DESIGN.pageHeight * scale;
+    if (canvas.width !== expectedWidth || canvas.height !== expectedHeight) {
+      throw new Error(`Export was ${canvas.width} × ${canvas.height}px instead of ${expectedWidth} × ${expectedHeight}px.`);
     }
     return canvas;
   } finally {
@@ -514,24 +631,35 @@ function downloadBlob(blob, filename) {
 function setExporting(exporting) {
   state.exporting = exporting;
   document.body.classList.toggle("is-exporting", exporting);
-  DOM.exportAll.disabled = exporting || !state.pages.length || !state.integrity?.passed;
-  DOM.generateGuide.disabled = exporting || !state.events.length;
-  document.querySelectorAll(".page-card__toolbar button").forEach((button) => {
-    button.disabled = exporting;
-  });
+  syncExportControls();
+}
+
+function exportBlockMessage() {
+  if (!state.pages.length || !state.integrity?.passed) return "Generate a valid guide before exporting.";
+  if (state.dateRisk?.requiresConfirmation && !state.datesConfirmed) {
+    return `Confirm the ${state.dateRisk.label} source dates before exporting.`;
+  }
+  return "";
 }
 
 async function exportSinglePage(index) {
   if (state.exporting) return;
+  const blocked = exportBlockMessage();
+  if (blocked) {
+    DOM.exportStatus.textContent = blocked;
+    return;
+  }
   const page = state.pages[index];
   if (!page) return;
+  const scale = readExportScale();
+  const filename = filenameAtScale(page.filename, scale);
   setExporting(true);
   try {
-    DOM.exportStatus.textContent = `Preparing ${page.filename}…`;
-    const canvas = await capturePageCanvas(index);
+    DOM.exportStatus.textContent = `Preparing ${filename}…`;
+    const canvas = await capturePageCanvas(index, scale);
     const blob = await canvasToBlob(canvas);
-    downloadBlob(blob, page.filename);
-    DOM.exportStatus.textContent = `${page.filename} exported at ${canvas.width} × ${canvas.height}px.`;
+    downloadBlob(blob, filename);
+    DOM.exportStatus.textContent = `${filename} exported at ${canvas.width} × ${canvas.height}px.`;
   } catch (error) {
     DOM.exportStatus.textContent = error.message;
   } finally {
@@ -540,21 +668,28 @@ async function exportSinglePage(index) {
 }
 
 async function exportAllPages() {
-  if (!state.pages.length || state.exporting) return;
+  if (state.exporting) return;
+  const blocked = exportBlockMessage();
+  if (blocked) {
+    DOM.exportStatus.textContent = blocked;
+    return;
+  }
   if (!window.JSZip) {
     DOM.exportStatus.textContent = "The ZIP library did not load. Check the connection and try again.";
     return;
   }
 
   setExporting(true);
+  const scale = readExportScale();
   try {
     const zip = new window.JSZip();
     for (let index = 0; index < state.pages.length; index += 1) {
       const page = state.pages[index];
-      DOM.exportStatus.textContent = `Rendering ${index + 1} of ${state.pages.length}: ${page.filename}`;
-      const canvas = await capturePageCanvas(index);
+      const filename = filenameAtScale(page.filename, scale);
+      DOM.exportStatus.textContent = `Rendering ${index + 1} of ${state.pages.length}: ${filename}`;
+      const canvas = await capturePageCanvas(index, scale);
       const blob = await canvasToBlob(canvas);
-      zip.file(page.filename, blob, { binary: true, compression: "STORE" });
+      zip.file(filename, blob, { binary: true, compression: "STORE" });
       await new Promise((resolve) => window.setTimeout(resolve, 0));
     }
     DOM.exportStatus.textContent = "Packing ZIP…";
@@ -564,8 +699,8 @@ async function exportAllPages() {
         DOM.exportStatus.textContent = `Packing ZIP… ${Math.round(metadata.percent)}%`;
       },
     );
-    downloadBlob(blob, "alternative-dublin-event-guide.zip");
-    DOM.exportStatus.textContent = `${state.pages.length} full-resolution PNGs exported.`;
+    downloadBlob(blob, scale === 2 ? "alternative-dublin-event-guide-2x.zip" : "alternative-dublin-event-guide.zip");
+    DOM.exportStatus.textContent = `${state.pages.length} PNGs exported at ${DESIGN.pageWidth * scale} × ${DESIGN.pageHeight * scale}px.`;
   } catch (error) {
     DOM.exportStatus.textContent = error.message;
   } finally {
@@ -577,9 +712,10 @@ function renderLoadError(error) {
   state.loading = false;
   setSourceState("error", "Needs CSV", `The Sheet could not be loaded automatically: ${error.message}`);
   DOM.csvFallback.open = true;
-  DOM.dataInspector.hidden = true;
+  DOM.dataInspector.hidden = !state.dataset;
   DOM.loadSheet.disabled = false;
   DOM.refreshSheet.disabled = false;
+  syncExportControls();
 }
 
 async function loadGoogleSheet() {
@@ -622,12 +758,21 @@ function setDataset(dataset, source) {
   state.dataset = dataset;
   state.events = dataset.events;
   state.source = source.source;
+  state.pages = [];
+  state.integrity = null;
+  state.refreshedAt = new Date();
+  state.dateRisk = null;
+  state.datesConfirmed = false;
+  DOM.confirmDates.checked = false;
   state.selectedDates = new Set(groupEventsByDay(dataset.events).map((group) => group.key));
   DOM.loadSheet.disabled = false;
   DOM.refreshSheet.disabled = false;
-  setSourceState("success", source.badge, source.message);
+  const refreshLabel = source.source.startsWith("Google Sheet") ? "Sheet refreshed" : "CSV loaded";
+  setSourceState("success", source.badge, `${source.message} ${refreshLabel} ${formatRefreshTime(state.refreshedAt)}.`);
   renderInspector();
   renderDayFilters();
+  renderDateCheck();
+  syncExportControls();
   scheduleGuide();
 }
 
@@ -677,6 +822,13 @@ function bindControls() {
   DOM.manualLimit.addEventListener("input", scheduleGuide);
   DOM.showVenue.addEventListener("change", scheduleGuide);
   DOM.showInstagram.addEventListener("change", scheduleGuide);
+  DOM.confirmDates.addEventListener("change", () => {
+    state.datesConfirmed = DOM.confirmDates.checked;
+    updateSummary(getSelectedEvents());
+  });
+  document.querySelectorAll('input[name="export-scale"]').forEach((input) => {
+    input.addEventListener("change", syncExportControls);
+  });
 
   DOM.selectAllDays.addEventListener("click", () => {
     state.selectedDates = new Set(groupEventsByDay(state.events).map((group) => group.key));
@@ -691,6 +843,7 @@ function bindControls() {
 }
 
 function getGuideStatus() {
+  const exportScale = readExportScale();
   return {
     source: state.source,
     rowsFound: state.dataset?.rowsFound || 0,
@@ -699,7 +852,16 @@ function getGuideStatus() {
     selectedEvents: getSelectedEvents().length,
     pages: state.pages.length,
     pageSizes: state.pages.map((page) => page.events.length),
-    filenames: state.pages.map((page) => page.filename),
+    filenames: state.pages.map((page) => filenameAtScale(page.filename, exportScale)),
+    exportScale,
+    outputDimensions: {
+      width: DESIGN.pageWidth * exportScale,
+      height: DESIGN.pageHeight * exportScale,
+    },
+    refreshedAt: state.refreshedAt?.toISOString() || null,
+    dateRange: state.dateRisk?.label || "",
+    dateConfirmationRequired: Boolean(state.dateRisk?.requiresConfirmation),
+    datesConfirmed: state.datesConfirmed,
     integrity: state.integrity,
   };
 }
@@ -740,6 +902,7 @@ function registerWebMcpTools() {
         maxEvents: { type: "integer", minimum: 1, maximum: 30 },
         showVenue: { type: "boolean" },
         showInstagram: { type: "boolean" },
+        exportScale: { type: "integer", enum: [1, 2] },
       },
       additionalProperties: false,
     },
@@ -767,6 +930,10 @@ function registerWebMcpTools() {
       }
       if (input.showVenue !== undefined) DOM.showVenue.checked = Boolean(input.showVenue);
       if (input.showInstagram !== undefined) DOM.showInstagram.checked = Boolean(input.showInstagram);
+      if (input.exportScale !== undefined) {
+        if (![1, 2].includes(input.exportScale)) throw new Error("exportScale must be 1 or 2.");
+        document.querySelector(`input[name="export-scale"][value="${input.exportScale}"]`).checked = true;
+      }
       await generateGuide();
       return getGuideStatus();
     },
@@ -779,8 +946,9 @@ function registerDebugSurface() {
   window.EventGuideDebug = {
     dimensions: { width: DESIGN.pageWidth, height: DESIGN.pageHeight },
     getState: getGuideStatus,
-    async verifyFirstExport() {
-      const canvas = await capturePageCanvas(0);
+    async verifyFirstExport(scale = readExportScale()) {
+      if (![1, 2].includes(scale)) throw new Error("Scale must be 1 or 2.");
+      const canvas = await capturePageCanvas(0, scale);
       return { width: canvas.width, height: canvas.height };
     },
   };

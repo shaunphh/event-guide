@@ -11,7 +11,11 @@ A small, static prototype that turns Alternative Dublin's weekly Google Sheet in
 - Carries a blank date down from the previous event, matching the current Sheet's grouped weekday structure.
 - Groups approved events by their actual date and paginates by measured rendered height.
 - Audits the output so every selected event appears exactly once.
-- Exports one page as PNG or every page in a ZIP, always at 1080 × 1350 pixels.
+- Matches the supplied Alternative Dublin Figma system: 50px margins, 44px Barlow Black titles, compact yellow time badges, and the supplied graffiti Dublin footer mark.
+- Shows every ignored row and the reason it was left out.
+- Flags implausibly old, future, or overly broad date ranges and requires a human confirmation before export.
+- Shows the local time of the most recent successful Sheet refresh.
+- Exports one page as PNG or every page in a ZIP at either 1080 × 1350 (1×) or 2160 × 2700 (2×).
 
 ## Run locally
 
@@ -54,4 +58,3 @@ After pushing to a new GitHub repository, choose **GitHub Actions** as the Pages
 - A row is valid when it has a parseable date and event name, and is approved when the `Approved` column exists.
 - Ticket fields that are descriptive text rather than an absolute HTTP(S) URL are retained as source text but are not treated as URLs.
 - Missing time is shown as `TBC` rather than interpreted as an all-day event.
-
