@@ -99,6 +99,25 @@ test("new weekly tab layout infers the blank date column and carries weekday dat
   assert.equal(result.events[2].dateKey, "2026-09-15");
 });
 
+test("weekday separator rows may contain generated checkbox and Canva values", () => {
+  const csv = [
+    " ,START TIME,NAME,LOCATION,Approved,TOP PICKS,Canva Graphic",
+    '"Mon, 14 Sep",,Monday,,,,',
+    ",11:00 AM,Monday Event,Venue A,TRUE,FALSE,",
+    '"Tue, 15 Sep",,Tuesday,,FALSE,FALSE,": Tuesday generated copy"',
+    ",7:00 PM,Tuesday Event,Venue B,TRUE,FALSE,",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 11, 12) });
+  assert.equal(result.rowsFound, 2);
+  assert.equal(result.events.length, 2);
+  assert.equal(result.ignored.length, 0);
+  assert.deepEqual(
+    result.events.map((event) => event.dateKey),
+    ["2026-09-14", "2026-09-15"],
+  );
+});
+
 test("new weekly GViz layout retains the typed year from a weekday separator row", () => {
   const table = gvizTableToRows({
     status: "ok",
@@ -117,7 +136,7 @@ test("new weekly GViz layout retains the typed year from a weekday separator row
             { v: "Monday" },
             null,
             null,
-            null,
+            { v: false, f: "FALSE" },
           ],
         },
         {

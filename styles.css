@@ -66,7 +66,7 @@
   --guide-event-title-size: 46px;
   --guide-event-meta-size: 40px;
   --guide-event-title-size: 47px;
-  --guide-event-meta-size: 41px;
+  --guide-event-meta-size: 42px;
   --guide-title-width: 1920px;
   --guide-background: #f0f0f0;
   --guide-ink: #101010;
@@ -1060,6 +1060,8 @@ input[name="export-scale"] + span {
   line-height: 34px;
   letter-spacing: -0.02em;
   white-space: nowrap;
+  height: 48px;
+  margin-top: 6px;
 }
 
 .guide-event__body {
@@ -1099,7 +1101,7 @@ input[name="export-scale"] + span {
   font-weight: 600;
   font-weight: 500;
   font-weight: 400;
-  letter-spacing: -0.02em;
+  /* letter-spacing: -0.02em; */
   text-transform: lowercase;
 }
 
@@ -1130,6 +1132,7 @@ input[name="export-scale"] + span {
   height: 62px;
   flex: 0 0 144px;
   object-fit: contain;
+  translate: 2px 6px;
 }
 
 .guide-page__footer-title {
@@ -1164,24 +1167,27 @@ input[name="export-scale"] + span {
   .guide-event__title {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
     font-weight: 154;
-    font-weight: 166;
+    font-weight: 168;
   }
 
   .guide-event__meta,
   .guide-event__instagram {
     font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
     font-weight: 84;
-    font-weight: 98;
+    font-weight: 100;
   }
 
   .guide-page__footer-title {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
     font-weight: 188;
+    font-weight: 168;
   }
 
   .guide-page__footer-date {
     font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
     font-weight: 116;
+    font-weight: 129;
+    font-weight: 100;
   }
 }
 

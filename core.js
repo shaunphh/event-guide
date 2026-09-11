@@ -311,9 +311,10 @@ export function normalizeRows({ headers, rows }, options = {}) {
       indices.comments,
       indices.whatsNew,
     ].map((columnIndex) => cell(row, columnIndex));
-    const isWeekdaySection =
-      (isWeekdayLabel(dateValue) || isWeekdayLabel(titleValue)) &&
-      otherValues.every((value) => !value);
+    const isDatedWeekdaySection = looksLikeDate(dateValue) && isWeekdayLabel(titleValue);
+    const isLegacyWeekdaySection =
+      isWeekdayLabel(dateValue) && !titleValue && otherValues.every((value) => !value);
+    const isWeekdaySection = isDatedWeekdaySection || isLegacyWeekdaySection;
     if (isWeekdaySection) {
       if (looksLikeDate(dateValue)) sectionDate = dateValue;
       if (!firstWeekdaySection) firstWeekdaySection = `${dateValue} ${titleValue}`.trim();
