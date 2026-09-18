@@ -53,13 +53,13 @@
   /* Edit these tokens to tune the fixed guide; app.js reads the same values for export. */
   --guide-width: 1080px;
   --guide-height: 1350px;
-  --guide-padding-x: 50px;
+  --guide-padding-x: 75px;
   --guide-padding-top: 75px;
-  --guide-padding-bottom: 50px;
+  --guide-padding-bottom: 75px;
   --guide-footer-height: 62px;
   --guide-event-gap: 32px;
   --guide-event-gap: 36px;
-  --guide-time-width: 89px;
+  --guide-time-width: 84px;
   --guide-column-gap: 32px;
   --guide-event-title-size: 44px;
   --guide-event-meta-size: 38px;
@@ -1060,7 +1060,7 @@ input[name="export-scale"] + span {
   line-height: 34px;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  height: 48px;
+  height: 52px;
   margin-top: 6px;
 }
 

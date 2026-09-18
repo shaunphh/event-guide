@@ -118,6 +118,26 @@ test("weekday separator rows may contain generated checkbox and Canva values", (
   );
 });
 
+test("a weekday date starts a new section when the separate weekday cell is blank", () => {
+  const csv = [
+    " ,NAME,LOCATION,START TIME,Instagram name,Approved,19 TOP PICKS,Canva Graphic",
+    '"Fri, 25 Sep",Friday,,,,TRUE,FALSE,',
+    ",Friday Event,Venue A,7:00 PM,@friday,TRUE,FALSE,",
+    '"Sat, 26 Sep",,,,,TRUE,FALSE,": generated empty copy"',
+    ",Saturday Event,Venue B,8:00 PM,@saturday,TRUE,FALSE,",
+    '"Sun, 27 Sep",Sunday,,,,TRUE,FALSE,',
+    ",Sunday Event,Venue C,9:00 PM,@sunday,TRUE,FALSE,",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 18, 12) });
+  assert.equal(result.events.length, 3);
+  assert.equal(result.ignored.length, 0);
+  assert.deepEqual(
+    result.events.map((event) => event.dateKey),
+    ["2026-09-25", "2026-09-26", "2026-09-27"],
+  );
+});
+
 test("new weekly GViz layout retains the typed year from a weekday separator row", () => {
   const table = gvizTableToRows({
     status: "ok",
@@ -148,15 +168,35 @@ test("new weekly GViz layout retains the typed year from a weekday separator row
             { v: true, f: "TRUE" },
           ],
         },
+        {
+          c: [
+            { v: "Date(2026,8,26)", f: "Sat, 26 Sep" },
+            null,
+            null,
+            null,
+            { v: true, f: "TRUE" },
+          ],
+        },
+        {
+          c: [
+            null,
+            { v: "Saturday Event" },
+            { v: "Venue B" },
+            { v: "Date(1899,11,30,20,0,0)", f: "8:00 PM" },
+            { v: true, f: "TRUE" },
+          ],
+        },
       ],
     },
   });
 
   const result = normalizeRows(table, { now: new Date(2026, 8, 9, 12) });
   assert.equal(result.schema.date, 0);
-  assert.equal(result.events.length, 1);
+  assert.equal(result.events.length, 2);
   assert.equal(result.events[0].dateKey, "2026-09-14");
   assert.equal(result.events[0].time, "11:00 AM");
+  assert.equal(result.events[1].dateKey, "2026-09-26");
+  assert.equal(result.events[1].time, "8:00 PM");
 });
 
 test("rows are all included when an Approved column is absent", () => {

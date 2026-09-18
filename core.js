@@ -311,7 +311,12 @@ export function normalizeRows({ headers, rows }, options = {}) {
       indices.comments,
       indices.whatsNew,
     ].map((columnIndex) => cell(row, columnIndex));
-    const isDatedWeekdaySection = looksLikeDate(dateValue) && isWeekdayLabel(titleValue);
+    const eventDetailValues = [indices.venue, indices.time, indices.url, indices.instagram].map((columnIndex) =>
+      cell(row, columnIndex),
+    );
+    const isDatedWeekdaySection =
+      looksLikeDate(dateValue) &&
+      (isWeekdayLabel(titleValue) || (!titleValue && eventDetailValues.every((value) => !value)));
     const isLegacyWeekdaySection =
       isWeekdayLabel(dateValue) && !titleValue && otherValues.every((value) => !value);
     const isWeekdaySection = isDatedWeekdaySection || isLegacyWeekdaySection;
