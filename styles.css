@@ -1031,7 +1031,8 @@ input[name="export-scale"] + span {
   min-height: 0;
   flex-direction: column;
   gap: var(--guide-event-gap);
-  padding: 0 0 24px;
+  /* Keep the existing breathing room plus a 16px safety guard above the footer. */
+  padding: 0 0 40px;
   overflow: hidden;
 }
 
