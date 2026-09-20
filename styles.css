@@ -1,36 +1,28 @@
-@font-face {
-  font-family: "Barlow GX";
-  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
-  font-style: normal;
-  font-weight: 100 900;
-  font-stretch: 75% 100%;
-  font-display: swap;
-}
-
 /*
  * Export-safe Barlow GX families. The source font uses its original GX
  * coordinates rather than the later CSS 100–900 weight scale.
  *
  * Named weight stops: 71 Regular, 96 Medium, 116 SemiBold, 141 Bold,
- * 166 ExtraBold, 188 Black. Any number between 22 and 188 is valid. Width is
- * attached to the font face so html2canvas keeps it; each guide rule below
- * supplies an editable native weight through the standard font-weight field.
+ * 166 ExtraBold, 188 Black. Any number between 22 and 188 is valid.
+ *
+ * Width is baked into each file (BarlowGX.ttf instanced at wdth 500/300):
+ * Safari and Chromium ≤139 ignore font-variation-settings inside @font-face,
+ * which made titles export condensed. Each guide rule below supplies an
+ * editable native weight through the standard font-weight field.
  */
 @font-face {
   font-family: "Barlow GX Normal";
-  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
+  src: url("assets/fonts/BarlowGX-Normal.ttf") format("truetype-variations");
   font-style: normal;
   font-weight: 22 188;
-  font-variation-settings: "wdth" 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Barlow GX Condensed";
-  src: url("assets/fonts/BarlowGX.ttf") format("truetype-variations");
+  src: url("assets/fonts/BarlowGX-Condensed.ttf") format("truetype-variations");
   font-style: normal;
   font-weight: 22 188;
-  font-variation-settings: "wdth" 300;
   font-display: swap;
 }
 
