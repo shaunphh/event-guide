@@ -45,9 +45,10 @@
   /* Edit these tokens to tune the fixed guide; app.js reads the same values for export. */
   --guide-width: 1080px;
   --guide-height: 1350px;
-  --guide-padding-x: 75px;
-  --guide-padding-top: 75px;
-  --guide-padding-bottom: 60px;
+  /* The AD system's 56px page margin (2 Oct 2026; was 75 / 75 / 60). */
+  --guide-padding-x: 56px;
+  --guide-padding-top: 56px;
+  --guide-padding-bottom: 56px;
   --guide-footer-height: 62px;
   --guide-event-gap: 32px;
   --guide-event-gap: 36px;
@@ -60,11 +61,12 @@
   --guide-event-title-size: 47px;
   --guide-event-meta-size: 42px;
   --guide-title-width: 1920px;
+  /* AD brand colours (2 Oct 2026): light #f0f0f0, yellow #ffed1f, dark #101010. */
   --guide-background: #f0f0f0;
   --guide-ink: #101010;
   --guide-grey: #7f7c7c;
-  --guide-yellow: #fde901;
-  --guide-footer-ink: #1d1e19;
+  --guide-yellow: #ffed1f;
+  --guide-footer-ink: #101010;
 }
 
 * {
@@ -1055,6 +1057,10 @@ input[name="export-scale"] + span {
   white-space: nowrap;
   height: 52px;
   margin-top: 6px;
+  /* A tag on tape with the AD label's clean cut (the bottom edge slants), drawn from Tape Type's
+     cut for these figures. html2canvas draws an SVG background but not clip-path or masks, so the
+     yellow is written into the shape: keep it in step with --guide-yellow. */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='52' viewBox='0 0 84 52' preserveAspectRatio='none'%3E%3Cpath d='M0 0H84V47.98L1.35 52Z' fill='%23ffed1f'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 
 .guide-event__body {
