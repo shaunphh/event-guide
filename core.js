@@ -1,3 +1,5 @@
+import { buildShape, defaults } from "./vendor/tape.js";
+
 const WEEKDAYS = [
   "sunday",
   "monday",
@@ -516,4 +518,46 @@ export function filenameForPage(index, total, day) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
   return `${String(index + 1).padStart(digits, "0")}-${slug || "page"}.png`;
+}
+
+/**
+ * Every AD tag is ExtraBold capitals on tape with Tape Type's clean cut (2 Oct 2026). A time tag is
+ * Tape Type's inside-page label, as Guide Studio's page numbers are: the tape cut around the time,
+ * not a box of one size. Each event seeds its own cut, so tags differ and keep their cut between
+ * exports.
+ */
+export function seedForTag(key) {
+  let hash = 2166136261;
+  for (const character of String(key)) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return ((hash >>> 0) % 4294967294) + 1;
+}
+
+/**
+ * The tag's tape and where its time sits, in px from the tag's top-left corner, for a time
+ * `width` px wide whose figures stand `capHeight` px tall at `size` px.
+ */
+export function timeTagShape({ text, width, capHeight, size, seed }) {
+  const shape = buildShape(
+    { ...defaults, headline: text, style: "feature", perLine: false, align: "left", mode: "clean", seed, fontSize: size, hugStrength: 1, rotationVariance: 0 },
+    [text],
+    [width],
+    [],
+    // Figures have no descenders, so the tape is balanced on their height, as Tape Type's label is.
+    { ascent: capHeight, descent: size * 0.02 },
+  );
+  const xs = shape.points.map((point) => point.x);
+  const ys = shape.points.map((point) => point.y);
+  const left = Math.min(...xs);
+  const top = Math.min(...ys);
+  const round = (value) => Math.round(value * 100) / 100;
+  return {
+    points: shape.points.map((point) => ({ x: round(point.x - left), y: round(point.y - top) })),
+    width: round(Math.max(...xs) - left),
+    height: round(Math.max(...ys) - top),
+    textX: round(shape.lines[0].x - left),
+    baseline: round(shape.lines[0].baseline - top),
+  };
 }

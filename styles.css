@@ -53,6 +53,11 @@
   --guide-event-gap: 36px;
   --guide-time-width: 84px;
   --guide-column-gap: 32px;
+  /* Time tags cut around their time (2 Oct 2026): the column fits 00:00 at 38px with the biggest
+     cut, and the gap is measured from that; most tags end well short of it. */
+  --guide-time-size: 38px;
+  --guide-time-width: 125px;
+  --guide-column-gap: 20px;
   --guide-event-title-size: 44px;
   --guide-event-meta-size: 38px;
   --guide-event-title-size: 46px;
@@ -1026,7 +1031,14 @@ input[name="export-scale"] + span {
   gap: var(--guide-event-gap);
   /* Keep the existing breathing room plus a 16px safety guard above the footer. */
   padding: 0 0 40px;
+  /* 2 Oct 2026: the guard grew, so the footer has clearly more room than the 36px between events:
+     every page now keeps at least 84px above it, for one more page in a full week (25, not 24). */
+  padding-bottom: 72px;
   overflow: hidden;
+  /* The list clips whatever runs past it, so it reaches 24px into the page's side padding: room
+     for the time tags' tape to overhang the margin, as Tape Type's labels do. Its words don't move. */
+  margin-left: -24px;
+  padding-left: 24px;
 }
 
 .guide-event {
@@ -1038,31 +1050,34 @@ input[name="export-scale"] + span {
 }
 
 .guide-event__time {
-  display: grid;
-  width: var(--guide-time-width);
-  height: 39px;
-  margin-top: 9px;
-  padding: 0;
-  place-items: center;
-  overflow: hidden;
-  text-align: center;
-  background: var(--guide-yellow);
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 38px;
+  /* Every AD tag is ExtraBold on tape with Tape Type's clean cut (2 Oct 2026). A time is Tape
+     Type's inside label, as Guide Studio's page numbers are: app.js cuts each tape around its time
+     with Tape Type's own generator (timeTagShape in core.js, vendor/tape.js) and sizes and places
+     each tag: the lettering on the page margin, the tape overhanging it, the figures on the title's
+     baseline. Before this the times were Condensed, centred in an 84 × 52 box. The tape is a PNG
+     because html2canvas draws neither clip-path nor masks, and Safari won't save an export that
+     drew an SVG picture from a data: URL. */
+  position: relative;
+  display: block;
+}
+
+.guide-event__tape {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.guide-event__time-text {
+  position: absolute;
+  color: var(--guide-ink);
+  font-family: "Barlow", Arial, sans-serif;
+  font-size: var(--guide-time-size);
   font-weight: 800;
-  font-weight: 700;
-  line-height: 34px;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: 0;
   white-space: nowrap;
-  height: 52px;
-  margin-top: 6px;
-  /* A tag on tape with the AD label's clean cut (the bottom edge slants), drawn from Tape Type's
-     cut for these figures: the path M0 0H84V47.98L1.35 52Z, filled #ffed1f, drawn at 4x.
-     It's a PNG because html2canvas draws background images but not clip-path or masks, and
-     Safari refuses to save a canvas that had an SVG image from a data: URL drawn on it ("The
-     operation is insecure."). The yellow is written into the picture: keep it in step with
-     --guide-yellow. */
-  background: url("data:image/png;base64,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") center / 100% 100% no-repeat;
 }
 
 .guide-event__body {
@@ -1165,9 +1180,9 @@ input[name="export-scale"] + span {
 
 /* These native GX weights can be tuned one unit at a time in preview and export. */
 @supports (font-variation-settings: normal) {
-  .guide-event__time {
-    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
-    font-weight: 129;
+  .guide-event__time-text {
+    font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
+    font-weight: 166;
   }
 
   .guide-event__title {

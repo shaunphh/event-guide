@@ -10,6 +10,8 @@ import {
   gvizTableToRows,
   normalizeRows,
   rowsFromCsv,
+  seedForTag,
+  timeTagShape,
   validatePagination,
 } from "./core.js";
 
@@ -70,6 +72,7 @@ const state = {
   sheetGid: DEFAULT_SHEET_GID,
   generationToken: 0,
   loadToken: 0,
+  generatedAt: null,
 };
 
 const byId = (id) => document.getElementById(id);
@@ -300,15 +303,124 @@ function getSelectedEvents() {
   return state.events.filter((event) => state.selectedDates.has(event.dateKey));
 }
 
+// Time tags: Tape Type's inside label around each time (timeTagShape in core.js). The type is read
+// off styles.css once the fonts are in (measureTagType), so the tags follow its tokens.
+const TAPE_PICTURE_SCALE = 3;
+// How far a tag's tape can reach past its last figure, in ems: its padding plus the biggest cut
+// (0.62em over 3,000 cuts). The time column (--guide-time-width) fits 00:00 at 38px with that.
+const TAG_REACH = 0.63; // the tape is drawn at 3x, so 2x exports keep a clean edge
+const tapePictures = new Map();
+const tagContext = document.createElement("canvas").getContext("2d");
+let tagType = null;
+
+function measureTagType() {
+  const page = document.createElement("article");
+  page.className = "guide-page";
+  const list = document.createElement("div");
+  list.className = "guide-page__events";
+  const row = document.createElement("article");
+  row.className = "guide-event";
+  const time = document.createElement("time");
+  time.className = "guide-event__time";
+  const figures = document.createElement("span");
+  figures.className = "guide-event__time-text";
+  figures.textContent = "00:00";
+  const body = document.createElement("div");
+  body.className = "guide-event__body";
+  const title = document.createElement("h3");
+  title.className = "guide-event__title";
+  title.textContent = "H";
+  // An empty inline block sits on the baseline, so its foot marks where the first line's baseline is.
+  const baselineMark = () => {
+    const mark = document.createElement("span");
+    mark.style.cssText = "display:inline-block;width:0;height:0";
+    return mark;
+  };
+  const figuresMark = baselineMark();
+  const titleMark = baselineMark();
+  figures.append(figuresMark);
+  title.append(titleMark);
+  time.append(figures);
+  body.append(title);
+  row.append(time, body);
+  list.append(row);
+  page.append(list);
+  DOM.measureStage.replaceChildren(page);
+  const styles = getComputedStyle(figures);
+  const type = {
+    font: `${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`,
+    size: Number.parseFloat(styles.fontSize),
+    // From the top of the time's own line to its baseline (its line height is 1).
+    figuresBaseline: figuresMark.getBoundingClientRect().bottom - figures.getBoundingClientRect().top,
+    // From the top of an event to its title's first baseline: the time stands on it.
+    titleBaseline: titleMark.getBoundingClientRect().bottom - row.getBoundingClientRect().top,
+  };
+  DOM.measureStage.replaceChildren();
+  return type;
+}
+
+function tapePicture(shape, colour) {
+  const key = `${colour} ${shape.width} ${shape.height} ${shape.points.map((point) => `${point.x},${point.y}`).join(" ")}`;
+  let picture = tapePictures.get(key);
+  if (!picture) {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(shape.width * TAPE_PICTURE_SCALE);
+    canvas.height = Math.ceil(shape.height * TAPE_PICTURE_SCALE);
+    const context = canvas.getContext("2d");
+    context.scale(canvas.width / shape.width, canvas.height / shape.height);
+    context.beginPath();
+    shape.points.forEach((point, index) => (index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y)));
+    context.closePath();
+    context.fillStyle = colour;
+    context.fill();
+    picture = canvas.toDataURL("image/png");
+    tapePictures.set(key, picture);
+  }
+  return picture;
+}
+
+function createTimeTag(text, key) {
+  // Before the fonts are in there is nothing to measure by; the guide measures again once they are.
+  const type = tagType ?? { font: '166 38px "Barlow GX Normal", Barlow, sans-serif', size: 38, figuresBaseline: 35, titleBaseline: 45 };
+  tagContext.font = type.font;
+  const fullWidth = tagContext.measureText(text).width;
+  // A time too long for its column (it should only ever be a time) is set smaller until its tape fits.
+  const size = Math.max(24, Math.min(type.size, DESIGN.timeWidth / (fullWidth / type.size + TAG_REACH)));
+  const scale = size / type.size;
+  tagContext.font = type.font.replace(`${type.size}px`, `${size}px`);
+  const width = tagContext.measureText(text).width;
+  const capHeight = Math.max(tagContext.measureText("H").actualBoundingBoxAscent, tagContext.measureText(text).actualBoundingBoxAscent) || size * 0.7;
+  const shape = timeTagShape({ text, width, capHeight, size, seed: seedForTag(key) });
+
+  const time = document.createElement("time");
+  time.className = "guide-event__time";
+  // The lettering starts on the margin and the tape overhangs it; the figures stand on the title's baseline.
+  time.style.width = `${shape.width}px`;
+  time.style.height = `${shape.height}px`;
+  time.style.marginLeft = `${-shape.textX}px`;
+  time.style.marginTop = `${type.titleBaseline - shape.baseline}px`;
+  const tape = document.createElement("img");
+  tape.className = "guide-event__tape";
+  tape.alt = "";
+  tape.src = tapePicture(shape, DESIGN.colors.yellow);
+  const figures = document.createElement("span");
+  figures.className = "guide-event__time-text";
+  figures.textContent = text;
+  figures.style.left = `${shape.textX}px`;
+  figures.style.top = `${shape.baseline - type.figuresBaseline * scale}px`;
+  if (scale !== 1) figures.style.fontSize = `${size}px`;
+  time.append(tape, figures);
+  return time;
+}
+
 function createEventElement(event, settings) {
   const item = document.createElement("article");
   item.className = "guide-event";
   item.dataset.eventId = event.id;
 
-  const time = document.createElement("time");
-  time.className = "guide-event__time";
-  time.textContent = formatBadgeTime(event.time);
-  if (time.textContent !== event.time) {
+  const label = formatBadgeTime(event.time);
+  const time = createTimeTag(label, `${event.title}|${label}`);
+  if (label !== event.time) {
     time.title = event.time;
     time.setAttribute("aria-label", event.time);
   }
@@ -385,6 +497,18 @@ function createMeasurementPage(date, settings) {
   return { element, list: element.querySelector(".guide-page__events") };
 }
 
+// Whether a page's events run into the guard above the footer (the list's bottom padding) or out
+// of its sides. Measured from where the last event ends, not from scrollHeight: Safari leaves a
+// flex box's bottom padding out of scrollHeight, so it filled pages to 7px above the footer.
+function eventsOverflow(list) {
+  const last = list.lastElementChild;
+  if (!last) return false;
+  const box = list.getBoundingClientRect();
+  const scale = list.offsetHeight ? box.height / list.offsetHeight : 1;
+  const guard = Number.parseFloat(getComputedStyle(list).paddingBottom) * scale;
+  return last.getBoundingClientRect().bottom > box.bottom - guard + scale || list.scrollWidth > list.clientWidth + 1;
+}
+
 function paginateByRenderedHeight(events, settings) {
   const pages = [];
   groupEventsByDay(events).forEach((group) => {
@@ -404,7 +528,7 @@ function paginateByRenderedHeight(events, settings) {
 
       const eventElement = createEventElement(event, settings);
       measurement.list.appendChild(eventElement);
-      const overflows = measurement.list.scrollHeight > measurement.list.clientHeight + 1;
+      const overflows = eventsOverflow(measurement.list);
 
       if (overflows && pageEvents.length) {
         eventElement.remove();
@@ -457,7 +581,7 @@ function syncExportControls() {
   const scale = readExportScale();
   const enabled = canExport();
   DOM.exportAll.disabled = !enabled;
-  DOM.generateGuide.disabled = state.exporting || !state.events.length;
+  DOM.generateGuide.disabled = state.exporting || state.loading || !state.events.length;
   DOM.exportAll.textContent = scale === 2 ? "Export all @2× (.zip)" : "Export all (.zip)";
   document.querySelectorAll('input[name="export-scale"]').forEach((input) => {
     input.disabled = state.exporting;
@@ -532,7 +656,7 @@ function updateSummary(selectedEvents) {
       DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} events fit · confirm source dates to export`;
       DOM.integrityStatus.classList.add("integrity-status--warning");
     } else {
-      DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} selected events rendered once`;
+      DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} selected events rendered once · ${formatRefreshTime(state.generatedAt ?? new Date())}`;
       DOM.integrityStatus.classList.add("integrity-status--passed");
     }
   } else if (state.integrity?.layoutOverflowPages?.length) {
@@ -547,7 +671,7 @@ function updateSummary(selectedEvents) {
 
 function auditRenderedLayout() {
   return [...DOM.previewGrid.querySelectorAll(".guide-page__events")]
-    .filter((list) => list.scrollHeight > list.clientHeight + 1 || list.scrollWidth > list.clientWidth + 1)
+    .filter(eventsOverflow)
     .map((list) => Number(list.closest(".guide-page")?.dataset.pageIndex));
 }
 
@@ -594,17 +718,29 @@ async function generateGuide() {
   const selectedEvents = getSelectedEvents();
   const settings = readSettings();
   DOM.integrityStatus.textContent = selectedEvents.length ? "Measuring event rows…" : "Select one or more days to generate pages.";
+  // The guide's own faces first: document.fonts.ready doesn't wait for fonts nothing has asked for
+  // yet, so the first layout used to be measured in the fallback fonts (25 pages, then 24 on Generate).
+  await Promise.all(GUIDE_FONTS.map((font) => document.fonts?.load(font).catch(() => [])));
   await waitForFonts();
   if (token !== state.generationToken) return;
 
+  tagType = measureTagType();
   state.pages = paginateByRenderedHeight(selectedEvents, settings);
   state.integrity = validatePagination(selectedEvents, state.pages);
   renderPages(settings);
   const overflowingPages = auditRenderedLayout();
   state.integrity.layoutOverflowPages = overflowingPages;
   state.integrity.passed = state.integrity.passed && overflowingPages.length === 0;
+  state.generatedAt = new Date();
   updateSummary(selectedEvents);
   registerDebugSurface();
+}
+
+// The yellow button does the whole job: the Sheet as it is now, laid out. The pages already follow
+// every choice on their own, so a button that only laid them out again looked like it did nothing.
+async function generateFromSheet() {
+  if (state.source.startsWith("Google Sheet")) await loadGoogleSheet({ keepSelection: true });
+  else await generateGuide();
 }
 
 function scheduleGuide() {
@@ -767,7 +903,7 @@ function renderLoadError(error) {
   syncExportControls();
 }
 
-async function loadGoogleSheet() {
+async function loadGoogleSheet({ keepSelection = false } = {}) {
   let gid;
   try {
     gid = parseSheetGid(DOM.sheetGid.value);
@@ -781,6 +917,7 @@ async function loadGoogleSheet() {
   state.loading = true;
   DOM.loadSheet.disabled = true;
   DOM.refreshSheet.disabled = true;
+  DOM.generateGuide.disabled = true;
   DOM.sheetGid.disabled = true;
   DOM.sheetGid.value = gid;
   setSourceState("loading", "Connecting", `Reading Google Sheet tab ${gid}…`);
@@ -808,14 +945,17 @@ async function loadGoogleSheet() {
       badge: "Sheet connected",
       message: `Loaded tab ${gid} anonymously through Google ${transport}. No sign-in required.`,
       source: `Google Sheet tab ${gid} · ${transport}`,
-    });
+    }, { keepSelection });
   } catch (error) {
     if (loadToken !== state.loadToken) return;
     renderLoadError(error);
   }
 }
 
-function setDataset(dataset, source) {
+function setDataset(dataset, source, { keepSelection = false } = {}) {
+  // A refresh keeps the days chosen, and a date check already confirmed for the same dates.
+  const chosen = keepSelection ? state.selectedDates : null;
+  const confirmedRange = keepSelection && state.datesConfirmed ? state.dateRisk?.label : null;
   state.loading = false;
   state.dataset = dataset;
   state.events = dataset.events;
@@ -826,7 +966,9 @@ function setDataset(dataset, source) {
   state.dateRisk = null;
   state.datesConfirmed = false;
   DOM.confirmDates.checked = false;
-  state.selectedDates = new Set(groupEventsByDay(dataset.events).map((group) => group.key));
+  const days = groupEventsByDay(dataset.events).map((group) => group.key);
+  const kept = chosen ? days.filter((day) => chosen.has(day)) : [];
+  state.selectedDates = new Set(kept.length ? kept : days);
   DOM.loadSheet.disabled = false;
   DOM.refreshSheet.disabled = false;
   DOM.sheetGid.disabled = false;
@@ -835,6 +977,10 @@ function setDataset(dataset, source) {
   renderInspector();
   renderDayFilters();
   renderDateCheck();
+  if (confirmedRange && state.dateRisk?.label === confirmedRange) {
+    state.datesConfirmed = true;
+    DOM.confirmDates.checked = true;
+  }
   syncExportControls();
   scheduleGuide();
 }
@@ -855,9 +1001,9 @@ function loadCsvText(text, label) {
 }
 
 function bindControls() {
-  DOM.loadSheet.addEventListener("click", loadGoogleSheet);
-  DOM.refreshSheet.addEventListener("click", loadGoogleSheet);
-  DOM.generateGuide.addEventListener("click", generateGuide);
+  DOM.loadSheet.addEventListener("click", () => loadGoogleSheet());
+  DOM.refreshSheet.addEventListener("click", () => loadGoogleSheet({ keepSelection: true }));
+  DOM.generateGuide.addEventListener("click", generateFromSheet);
   DOM.exportAll.addEventListener("click", exportAllPages);
   DOM.sheetGid.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
