@@ -650,10 +650,17 @@ async function capturePageCanvas(index, scale = readExportScale()) {
 
 function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("The browser could not encode this PNG."));
-    }, "image/png");
+    try {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("The browser could not encode this PNG."));
+      }, "image/png");
+    } catch (error) {
+      // Safari says "The operation is insecure." when something drawn on the page is a picture it won't save.
+      if (error?.name === "SecurityError") {
+        reject(new Error("This browser won't save the export because of a picture on the page (\"The operation is insecure\"). Try exporting in Chrome."));
+      } else reject(error);
+    }
   });
 }
 
