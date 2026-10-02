@@ -241,7 +241,7 @@ test("filenames are padded and day-based", () => {
 
 test("guide display formatting matches the compact Figma labels", () => {
   const monday = new Date(2025, 1, 10, 12);
-  assert.equal(formatFooterDate(monday), "Mon 10 feb");
+  assert.equal(formatFooterDate(monday), "Mon 10 Feb");
   assert.equal(formatBadgeTime("11:30 AM"), "11:30");
   assert.equal(formatBadgeTime("8:00 PM"), "20:00");
   assert.equal(formatBadgeTime("12 AM"), "00:00");

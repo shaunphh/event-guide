@@ -45,10 +45,9 @@
   /* Edit these tokens to tune the fixed guide; app.js reads the same values for export. */
   --guide-width: 1080px;
   --guide-height: 1350px;
-  /* The AD system's 56px page margin (2 Oct 2026; was 75 / 75 / 60). */
-  --guide-padding-x: 56px;
-  --guide-padding-top: 56px;
-  --guide-padding-bottom: 56px;
+  --guide-padding-x: 75px;
+  --guide-padding-top: 75px;
+  --guide-padding-bottom: 60px;
   --guide-footer-height: 62px;
   --guide-event-gap: 32px;
   --guide-event-gap: 36px;
@@ -1154,6 +1153,10 @@ input[name="export-scale"] + span {
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
+  /* Set like the details on Guide Studio's pages: Bold, normal width, the meta grey (2 Oct 2026). */
+  font-family: "Barlow", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 /* These native GX weights can be tuned one unit at a time in preview and export. */
@@ -1187,6 +1190,8 @@ input[name="export-scale"] + span {
     font-weight: 116;
     font-weight: 129;
     font-weight: 100;
+    font-family: "Barlow GX Normal", "Barlow", sans-serif;
+    font-weight: 141;
   }
 }
 

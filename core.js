@@ -411,7 +411,8 @@ export function formatDateHeading(date) {
 }
 
 export function formatFooterDate(date) {
-  return `${formatDayShort(date)} ${date.getDate()} ${MONTHS[date.getMonth()].toLowerCase()}`;
+  const month = MONTHS[date.getMonth()];
+  return `${formatDayShort(date)} ${date.getDate()} ${month[0]}${month.slice(1).toLowerCase()}`;
 }
 
 export function formatBadgeTime(value) {
