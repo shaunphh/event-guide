@@ -1153,8 +1153,9 @@ input[name="export-scale"] + span {
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  /* Set like the details on Guide Studio's pages: Bold, normal width, the meta grey (2 Oct 2026). */
+  /* The AD footer style, shared with Guide Studio (2 Oct 2026): Bold, normal width, 31px, the meta grey. */
   font-family: "Barlow", Arial, sans-serif;
+  font-size: 31px;
   font-weight: 700;
   letter-spacing: 0;
 }
