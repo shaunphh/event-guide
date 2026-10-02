@@ -1,0 +1,381 @@
+{
+  "name": "Alternative Dublin",
+  "version": 1,
+  "meta": {
+    "source": "github",
+    "repo": "shaunphh/tape-type",
+    "ref": "main",
+    "paths": {
+      "tokens": [
+        "src/ad-tokens.json"
+      ],
+      "fonts": [
+        "src/assets/fonts/BarlowGX-Normal.ttf"
+      ],
+      "assets": [
+        "src/assets/logo-left.svg",
+        "src/assets/logo-right.svg",
+        "src/assets/swipe-arrow.svg"
+      ]
+    },
+    "synced": "2026-10-02",
+    "about": "The values every Alternative Dublin tool shares. Tape Type keeps this file; the event guide, Guide Studio and Good Eye copy it with their sync scripts. Change a value here, then sync each tool. Decided by Shaun on 2 October 2026."
+  },
+  "color": {
+    "themes": [
+      {
+        "id": "brand",
+        "name": "Brand"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "yellow",
+        "value": "#ffed1f",
+        "usage": "The brand yellow: tape behind headlines on dark covers, every tag (eyebrows, page numbers, time tags), and the logo and swipe arrow wherever it reads. Lettering on it is `dark`. On yellow tape or a yellow ground, a tag turns `light`."
+      },
+      {
+        "name": "light",
+        "value": "#f0f0f0",
+        "usage": "The one white (there is no pure white): light pages, light tape, the inside page's label tape, and titles, highlights and marks on `dark`. Lettering on it is `dark`."
+      },
+      {
+        "name": "dark",
+        "value": "#101010",
+        "usage": "Ink and dark ground: lettering on `yellow` and `light`, dark pages and covers behind photos."
+      },
+      {
+        "name": "grey-on-dark",
+        "value": "#c2c2c2",
+        "usage": "Story text on `dark` pages (11:1 on `dark`). Titles, highlights and words in stars stay `light`."
+      },
+      {
+        "name": "grey-on-light",
+        "value": "#4b4a4a",
+        "usage": "Story text on `light` pages (8:1 on `light`)."
+      },
+      {
+        "name": "meta",
+        "value": "#7f7c7c",
+        "usage": "Dates, venues, handles and footer details. 3.7:1 on `light` and 4.5:1 on `dark`, so only at 24px and up: every use is 31px or more."
+      }
+    ]
+  },
+  "type": {
+    "fonts": [
+      {
+        "family": "Barlow GX",
+        "file": "fonts/BarlowGX-Normal.ttf",
+        "weight": "22 188",
+        "style": "normal"
+      },
+      {
+        "family": "Barlow GX Condensed",
+        "file": "fonts/BarlowGX-Condensed.ttf",
+        "weight": "22 188",
+        "style": "normal"
+      }
+    ],
+    "families": {
+      "barlow": "\"Barlow GX\", \"Barlow GX Normal\", Barlow, Arial, sans-serif",
+      "barlow-condensed": "\"Barlow GX Condensed\", \"Barlow Condensed\", sans-serif"
+    },
+    "groups": [
+      {
+        "name": "Covers",
+        "family": "barlow",
+        "styles": [
+          {
+            "name": "cover-headline",
+            "fontSize": "90px",
+            "lineHeight": 0.94,
+            "fontWeight": 141,
+            "sample": "How to Make the Most of a Weekend Visit to Dublin",
+            "usage": "Tape Type post and video covers: Bold, as typed (Title Case by default), the largest size from 90px down to 72px that fits, lines 0.94 apart, `dark` on `light` tape."
+          },
+          {
+            "name": "cover-carousel",
+            "fontSize": "196px",
+            "lineHeight": 0.85,
+            "letterSpacing": "-0.03em",
+            "fontWeight": 141,
+            "sample": "Event Guide Picks",
+            "usage": "Guide Studio carousel covers: Bold at 196px, −3% tracking, 85% line height, on rough-cut tape: `light` on Picks, `yellow` on What's New."
+          },
+          {
+            "name": "eyebrow",
+            "fontSize": "41px",
+            "lineHeight": 1,
+            "fontWeight": 166,
+            "sample": "BREAKING",
+            "usage": "The tag seated on a cover's first line: ExtraBold capitals, 34–41px (nine tenths of the published 38–46), on clean-cut `yellow` tape in `dark`."
+          },
+          {
+            "name": "date-strip",
+            "fontSize": "48px",
+            "lineHeight": 1,
+            "fontWeight": 166,
+            "sample": "5 OCT – 11 OCT",
+            "usage": "Guide Studio's carousel covers: the dates as a tag on the headline's tape. ExtraBold capitals at 48px on clean-cut tape (`yellow` on Picks, `light` on What's New) in `dark`, turned slightly."
+          },
+          {
+            "name": "supporting-line",
+            "fontSize": "46px",
+            "lineHeight": 1.02,
+            "fontWeight": 96,
+            "sample": "New openings, good stories and more…",
+            "usage": "What's New covers only: one to three lines under the tape, Medium, `light`, its last line level with the arrow's foot."
+          }
+        ]
+      },
+      {
+        "name": "Pages",
+        "family": "barlow",
+        "styles": [
+          {
+            "name": "story-title",
+            "fontSize": "52px",
+            "lineHeight": 1.07,
+            "fontWeight": 141,
+            "sample": "Light House Cinema plans major Smithfield expansion",
+            "usage": "Tape Type's inside pages: Bold, as typed, the largest size from 52px down to 45px that fits three lines, `light` on `dark` (Bold again since 2 Oct 2026, after a day at 168). The event guide and Guide Studio set their story titles at 168."
+          },
+          {
+            "name": "story-title-carousel",
+            "fontSize": "69px",
+            "lineHeight": 1.02,
+            "fontWeight": 168,
+            "sample": "RUBY SESSIONS",
+            "usage": "Guide Studio's story pages: 168 (a step above ExtraBold, ExtraBold to the eye) in capitals at 69px, zero tracking. The event guide's `guide-title` shares the weight."
+          },
+          {
+            "name": "body",
+            "fontSize": "38px",
+            "lineHeight": 1.3,
+            "fontWeight": 71,
+            "sample": "The Light House Cinema has applied for planning permission to add two new screens.",
+            "usage": "Story text: Regular, 38px, lines 1.3 apart, one size for everything under the title. `grey-on-dark` on dark pages, `grey-on-light` on light ones; words in stars go Bold in `light`."
+          },
+          {
+            "name": "body-large",
+            "fontSize": "42px",
+            "lineHeight": 1.2,
+            "fontWeight": 71,
+            "sample": "Friday 18 September · 6.30pm",
+            "usage": "A box set a size up in Tape Type (text or highlight): 42px, lines 1.2 apart."
+          },
+          {
+            "name": "label",
+            "fontSize": "38px",
+            "lineHeight": 1,
+            "fontWeight": 166,
+            "sample": "MEET THE ARTISTS",
+            "usage": "Tags on pages: Tape Type's label (on `light` tape), Guide Studio's page numbers and the event guide's times (on `yellow`). ExtraBold capitals, 38px, `dark`, on tape with the clean cut, the lettering on the margin and the tape overhanging it."
+          }
+        ]
+      },
+      {
+        "name": "Event guide",
+        "family": "barlow",
+        "styles": [
+          {
+            "name": "guide-title",
+            "fontSize": "47px",
+            "lineHeight": 1.1,
+            "fontWeight": 168,
+            "sample": "ARTHUR'S JAZZ JAM",
+            "usage": "Event names: 168 in capitals at 47px, `dark` on `light`."
+          },
+          {
+            "name": "guide-meta",
+            "family": "barlow-condensed",
+            "fontSize": "42px",
+            "lineHeight": 1,
+            "letterSpacing": "-0.03em",
+            "fontWeight": 100,
+            "sample": "Arthur's Blues & Jazz Club @arthursbluesjazz",
+            "usage": "The venue and Instagram handle under each event: Condensed at 100, −3% tracking, `meta`."
+          },
+          {
+            "name": "guide-wordmark",
+            "fontSize": "52px",
+            "lineHeight": 0.83,
+            "letterSpacing": "-0.03em",
+            "fontWeight": 168,
+            "sample": "EVENT GUIDE",
+            "usage": "Beside the Dublin mark in the footer, in capitals, `dark`."
+          }
+        ]
+      },
+      {
+        "name": "Footer",
+        "family": "barlow",
+        "styles": [
+          {
+            "name": "footer",
+            "fontSize": "31px",
+            "lineHeight": "35px",
+            "fontWeight": 141,
+            "sample": "Mon 14 Sep",
+            "usage": "Every page's footer: Bold, 31px, lines 35px apart. Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      {
+        "name": "safe-cover",
+        "value": "80px",
+        "usage": "Covers: lettering keeps 80px from every edge; tape and tags may reach into it. The logo and arrow sit on its corners."
+      },
+      {
+        "name": "margin-inside",
+        "value": "56px",
+        "usage": "Inside and story pages: text starts 56px from the sides."
+      },
+      {
+        "name": "picture-height",
+        "value": "540px",
+        "usage": "The picture at the top of an inside or story page. Every page has the same height, so the story keeps to the room under it."
+      },
+      {
+        "name": "grid-crop-post",
+        "value": "34px",
+        "usage": "Instagram's profile grid shows a 3:4 crop of a 4:5 post: about 34px off each side. Nothing that must show in the grid goes there."
+      },
+      {
+        "name": "grid-crop-video",
+        "value": "240px",
+        "usage": "The grid also cuts the top and bottom 240px of a 9:16 video cover, so its lettering keeps 80px inside what is left."
+      },
+      {
+        "name": "guide-padding-sides",
+        "value": "75px",
+        "usage": "Event guide pages: 75px at the sides and top (Shaun's own margins)."
+      },
+      {
+        "name": "guide-padding-bottom",
+        "value": "60px",
+        "usage": "Event guide pages: 60px under the footer."
+      },
+      {
+        "name": "guide-event-gap",
+        "value": "36px",
+        "usage": "Event guide: the space between events."
+      },
+      {
+        "name": "guide-footer-guard",
+        "value": "84px",
+        "usage": "Event guide: the least room kept between the last event and the footer, measured where the event ends."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "page-width",
+        "value": "1080px",
+        "usage": "Every post, page and video cover is 1080px wide."
+      },
+      {
+        "name": "page-height",
+        "value": "1350px",
+        "usage": "Posts and pages are 4:5, 1080 × 1350."
+      },
+      {
+        "name": "video-height",
+        "value": "1920px",
+        "usage": "Video covers are 9:16, 1080 × 1920."
+      },
+      {
+        "name": "logo-cover",
+        "value": "210px",
+        "usage": "The Alternative Dublin logo on covers, top corner of the safe area."
+      },
+      {
+        "name": "logo-inside",
+        "value": "128px",
+        "usage": "The logo on an inside page, when it is on (off by default)."
+      },
+      {
+        "name": "arrow",
+        "value": "100px",
+        "usage": "The painted swipe arrow, bottom right, in the logo's colour."
+      },
+      {
+        "name": "dublin-mark",
+        "value": "144px",
+        "usage": "The graffiti Dublin mark in the event guide's footer, `dark`."
+      }
+    ]
+  },
+  "weight": {
+    "tokens": [
+      {
+        "name": "regular",
+        "value": "71",
+        "usage": "Barlow GX's own weight scale runs 22–188 (stem thickness in thousandths of the size). Regular, CSS 400: story text."
+      },
+      {
+        "name": "medium",
+        "value": "96",
+        "usage": "Medium, CSS 500: What's New's supporting line."
+      },
+      {
+        "name": "semibold",
+        "value": "116",
+        "usage": "SemiBold, CSS 600: words in single stars."
+      },
+      {
+        "name": "bold",
+        "value": "141",
+        "usage": "Bold, CSS 700: cover headlines, Tape Type's inside titles, words in double stars, footers."
+      },
+      {
+        "name": "extrabold",
+        "value": "166",
+        "usage": "ExtraBold, CSS 800: every tag. The event guide's and Guide Studio's story titles sit just above it, at 168."
+      },
+      {
+        "name": "black",
+        "value": "188",
+        "usage": "Black, CSS 900: the published feature covers measured as Black; the tools no longer use it."
+      }
+    ]
+  },
+  "opacity": {
+    "tokens": [
+      {
+        "name": "photo-darken",
+        "value": "0.15",
+        "usage": "Tape Type and Good Eye lay 15% `dark` over every cover photo, under the artwork (a switch in Tape Type)."
+      },
+      {
+        "name": "cover-scrim",
+        "value": "0.3",
+        "usage": "Guide Studio's carousel covers start with a 30% scrim over the photos, adjustable."
+      }
+    ]
+  },
+  "tape": {
+    "tokens": [
+      {
+        "name": "cut-headline",
+        "value": "rough",
+        "usage": "Post covers: the headline's tape has the rough cut, its wider strip at the bottom on Guide Studio's covers."
+      },
+      {
+        "name": "cut-tag",
+        "value": "clean",
+        "usage": "Every tag (eyebrows, labels, page numbers, time tags): Tape Type's clean cut, each with its own seed, the foot kept flat where a tag sits on tape."
+      },
+      {
+        "name": "cut-video",
+        "value": "tape",
+        "usage": "Video covers start with the Tape cut."
+      }
+    ]
+  }
+}

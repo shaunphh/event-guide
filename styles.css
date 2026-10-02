@@ -71,6 +71,24 @@
   --guide-grey: #7f7c7c;
   --guide-yellow: #ffed1f;
   --guide-footer-ink: #101010;
+
+  /* From the shared AD tokens (vendor/ad-tokens.css, synced from Tape Type by
+     scripts/sync-tape.mjs): a change there reaches the guide on the next sync. A value set
+     after these here would win, and the guide would drift from the other tools. */
+  --guide-width: var(--ad-page-width);
+  --guide-height: var(--ad-page-height);
+  --guide-padding-x: var(--ad-guide-padding-sides);
+  --guide-padding-top: var(--ad-guide-padding-sides);
+  --guide-padding-bottom: var(--ad-guide-padding-bottom);
+  --guide-event-gap: var(--ad-guide-event-gap);
+  --guide-event-title-size: var(--ad-guide-title-size);
+  --guide-event-meta-size: var(--ad-guide-meta-size);
+  --guide-time-size: var(--ad-label-size);
+  --guide-background: var(--ad-light);
+  --guide-ink: var(--ad-dark);
+  --guide-grey: var(--ad-meta);
+  --guide-yellow: var(--ad-yellow);
+  --guide-footer-ink: var(--ad-dark);
 }
 
 * {
@@ -1033,8 +1051,8 @@ input[name="export-scale"] + span {
   padding: 0 0 40px;
   /* 2 Oct 2026: the guard grew, so the footer has clearly more room than the 36px between events:
      every page keeps at least 84px above it (Shaun's call; 72 was tried first), for one more page
-     in a full week (25, not 24). */
-  padding-bottom: 84px;
+     in a full week (25, not 24). The shared tokens' guide-footer-guard. */
+  padding-bottom: var(--ad-guide-footer-guard);
   overflow: hidden;
   /* The list clips whatever runs past it, so it reaches 24px into the page's side padding: room
      for the time tags' tape to overhang the margin, as Tape Type's labels do. Its words don't move. */
@@ -1095,6 +1113,7 @@ input[name="export-scale"] + span {
   font-weight: 800;
   line-height: 1;
   line-height: 1.1;
+  line-height: var(--ad-guide-title-line-height);
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -1112,6 +1131,8 @@ input[name="export-scale"] + span {
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.03em;
+  line-height: var(--ad-guide-meta-line-height);
+  letter-spacing: var(--ad-guide-meta-letter-spacing);
 }
 
 .guide-event__instagram {
@@ -1156,9 +1177,12 @@ input[name="export-scale"] + span {
   color: var(--guide-footer-ink);
   font-family: "Barlow", Arial, sans-serif;
   font-size: 52px;
+  font-size: var(--ad-guide-wordmark-size);
   font-weight: 900;
   line-height: 0.83;
   letter-spacing: -0.03em;
+  line-height: var(--ad-guide-wordmark-line-height);
+  letter-spacing: var(--ad-guide-wordmark-letter-spacing);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -1174,7 +1198,7 @@ input[name="export-scale"] + span {
   white-space: nowrap;
   /* The AD footer style, shared with Guide Studio (2 Oct 2026): Bold, normal width, 31px, the meta grey. */
   font-family: "Barlow", Arial, sans-serif;
-  font-size: 31px;
+  font-size: var(--ad-footer-size);
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -1183,13 +1207,14 @@ input[name="export-scale"] + span {
 @supports (font-variation-settings: normal) {
   .guide-event__time-text {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
-    font-weight: 166;
+    font-weight: var(--ad-label-weight);
   }
 
   .guide-event__title {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
     font-weight: 154;
     font-weight: 168;
+    font-weight: var(--ad-guide-title-weight);
   }
 
   .guide-event__meta,
@@ -1197,12 +1222,14 @@ input[name="export-scale"] + span {
     font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
     font-weight: 84;
     font-weight: 100;
+    font-weight: var(--ad-guide-meta-weight);
   }
 
   .guide-page__footer-title {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
     font-weight: 188;
     font-weight: 168;
+    font-weight: var(--ad-guide-wordmark-weight);
   }
 
   .guide-page__footer-date {
@@ -1211,7 +1238,7 @@ input[name="export-scale"] + span {
     font-weight: 129;
     font-weight: 100;
     font-family: "Barlow GX Normal", "Barlow", sans-serif;
-    font-weight: 141;
+    font-weight: var(--ad-footer-weight);
   }
 }
 
