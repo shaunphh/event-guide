@@ -1032,8 +1032,9 @@ input[name="export-scale"] + span {
   /* Keep the existing breathing room plus a 16px safety guard above the footer. */
   padding: 0 0 40px;
   /* 2 Oct 2026: the guard grew, so the footer has clearly more room than the 36px between events:
-     every page now keeps at least 84px above it, for one more page in a full week (25, not 24). */
-  padding-bottom: 72px;
+     every page keeps at least 84px above it (Shaun's call; 72 was tried first), for one more page
+     in a full week (25, not 24). */
+  padding-bottom: 84px;
   overflow: hidden;
   /* The list clips whatever runs past it, so it reaches 24px into the page's side padding: room
      for the time tags' tape to overhang the margin, as Tape Type's labels do. Its words don't move. */

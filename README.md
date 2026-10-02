@@ -9,7 +9,7 @@ A small, static prototype that turns Alternative Dublin's weekly Google Sheet in
 - Maps `DATE`, `NAME`, `LOCATION`, `START TIME`, `EVENT/TICKETS LINK`, `Instagram Link`, `Approved`, and `TOP PICKS` into normalized event records.
 - Includes only rows marked `Approved = TRUE` when that column exists.
 - Reads dated weekday separator rows and carries their date through the event rows beneath them.
-- Groups approved events by their actual date and paginates by measured rendered height, once the guide's fonts have loaded, keeping a 72px guard above the footer (measured from where the last event ends, so Safari keeps it too).
+- Groups approved events by their actual date and paginates by measured rendered height, once the guide's fonts have loaded, keeping an 84px guard above the footer (measured from where the last event ends, so Safari keeps it too).
 - **Generate guide** reads the Sheet again and lays the guide out, keeping the days chosen; the pages also follow every choice by themselves.
 - Audits the output so every selected event appears exactly once.
 - Follows the AD system shared with Tape Type and Guide Studio (2 Oct 2026): its own margins (75px top and sides, 60px bottom), the brand colours (light `#f0f0f0`, yellow `#ffed1f`, dark `#101010`), 47px titles in Barlow GX 168 (about ExtraBold), time tags cut like Tape Type's labels and Guide Studio's page numbers (38px ExtraBold on yellow tape cut around each time by Tape Type's own generator, a different cut per event), and the graffiti Dublin footer mark.
