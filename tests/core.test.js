@@ -50,6 +50,17 @@ test("real Sheet-shaped CSV skips weekday banners and normalizes approved events
   assert.equal(formatDateHeading(result.events[0].date), "MONDAY 10 FEB");
 });
 
+test("handles typed with a full-width at sign come out as plain @handles", () => {
+  const csv = [
+    "DATE,NAME,LOCATION,START TIME,Instagram Link,Approved",
+    "02/10,Pottery night,Dublin,7:00 PM,＠potterydublin,TRUE",
+    "02/10,Second,Dublin,8:00 PM,@＠workmansclub,TRUE",
+  ].join("\n");
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 8) });
+  assert.equal(result.events[0].instagram, "@potterydublin");
+  assert.equal(result.events[1].instagram, "@workmansclub");
+});
+
 test("GViz conversion retains typed event year and formatted time", () => {
   const table = gvizTableToRows({
     status: "ok",

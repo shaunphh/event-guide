@@ -559,6 +559,18 @@ async function waitForFonts() {
   ]);
 }
 
+// Both GX faces, at weights the artwork uses. If either failed to load, the browser would fall
+// back to static Barlow at these weights, which are all under 400, and draw the guide in Thin.
+const GUIDE_FONTS = ['168 47px "Barlow GX Normal"', '100 42px "Barlow GX Condensed"'];
+
+async function ensureGuideFonts() {
+  if (!document.fonts?.load) return;
+  await Promise.all(GUIDE_FONTS.map((font) => document.fonts.load(font).catch(() => [])));
+  if (!GUIDE_FONTS.every((font) => document.fonts.check(font))) {
+    throw new Error("The guide fonts didn't load, so this export would come out in the wrong font. Check the connection and reload the page.");
+  }
+}
+
 async function waitForImages(root) {
   const images = [...root.querySelectorAll("img")];
   await Promise.all(
@@ -608,6 +620,7 @@ async function capturePageCanvas(index, scale = readExportScale()) {
   if (!source) throw new Error("That preview page is no longer available.");
 
   await waitForFonts();
+  await ensureGuideFonts();
   const clone = source.cloneNode(true);
   clone.style.removeProperty("--preview-scale");
   DOM.exportStage.replaceChildren(clone);

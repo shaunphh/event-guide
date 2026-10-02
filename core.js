@@ -257,7 +257,8 @@ function asBoolean(value) {
 }
 
 function normalizeInstagram(value) {
-  let handle = String(value ?? "").trim();
+  // NFKC turns look-alikes pasted from phones, such as the full-width "＠", into plain ASCII.
+  let handle = String(value ?? "").normalize("NFKC").trim();
   if (!handle) return "";
   if (/^https?:\/\//i.test(handle)) {
     try {
