@@ -215,9 +215,9 @@
             "name": "footer",
             "fontSize": "36px",
             "lineHeight": "40px",
-            "fontWeight": 141,
+            "fontWeight": 116,
             "sample": "Mon 14 Sep",
-            "usage": "Every page's footer: Condensed Bold, 36px, lines 40px apart, where space is at a premium (Bold at normal width, 31px, until 5 October 2026). Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
+            "usage": "Every page's footer: Condensed SemiBold, 36px, lines 40px apart, where space is at a premium (Bold at normal width, 31px, until 5 October 2026). Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
           }
         ]
       }
@@ -331,12 +331,12 @@
       {
         "name": "semibold",
         "value": "116",
-        "usage": "SemiBold, CSS 600: words in single stars."
+        "usage": "SemiBold, CSS 600: words in single stars, footers."
       },
       {
         "name": "bold",
         "value": "141",
-        "usage": "Bold, CSS 700: cover headlines, words in double stars, footers."
+        "usage": "Bold, CSS 700: cover headlines, words in double stars."
       },
       {
         "name": "extrabold",

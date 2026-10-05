@@ -688,7 +688,7 @@ async function waitForFonts() {
 
 // Both GX faces, at weights the artwork uses. If either failed to load, the browser would fall
 // back to static Barlow at these weights, which are all under 400, and draw the guide in Thin.
-const GUIDE_FONTS = ['168 47px "Barlow GX Normal"', '100 42px "Barlow GX Condensed"', '166 38px "Barlow GX Condensed"', '141 36px "Barlow GX Condensed"'];
+const GUIDE_FONTS = ['168 47px "Barlow GX Normal"', '100 42px "Barlow GX Condensed"', '166 38px "Barlow GX Condensed"', '116 36px "Barlow GX Condensed"'];
 
 async function ensureGuideFonts() {
   if (!document.fonts?.load) return;

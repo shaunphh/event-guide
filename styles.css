@@ -1198,12 +1198,13 @@ input[name="export-scale"] + span {
   letter-spacing: -0.02em;
   white-space: nowrap;
   /* The AD footer style, shared with Guide Studio (2 Oct 2026): Bold, normal width, 31px, the meta grey.
-     Condensed again since 5 Oct 2026, at 36px, where space is at a premium. */
+     Condensed SemiBold since 5 Oct 2026, at 36px, where space is at a premium. */
   font-family: "Barlow", Arial, sans-serif;
   font-size: var(--ad-footer-size);
   font-weight: 700;
   letter-spacing: 0;
   font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
 }
 
 /* These native GX weights can be tuned one unit at a time in preview and export. */
