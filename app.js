@@ -12,6 +12,7 @@ import {
   rowsFromCsv,
   seedForTag,
   timeTagShape,
+  TAG_INSET,
   validatePagination,
 } from "./core.js";
 
@@ -307,7 +308,9 @@ function getSelectedEvents() {
 // off styles.css once the fonts are in (measureTagType), so the tags follow its tokens.
 const TAPE_PICTURE_SCALE = 3;
 // How far a tag's tape can reach past its last figure, in ems: its padding plus the biggest cut
-// (0.62em over 3,000 cuts). The time column (--guide-time-width) fits 00:00 at 38px with that.
+// (0.62em over 3,000 cuts). Its figures start TAG_INSET in from the margin (core.js), so no tape
+// crosses it (5 Oct 2026; till then the figures stood on the margin and the tape overhung it,
+// 11–24px nearer the page's edge). The time column (--guide-time-width) fits 00:00 at 38px with both.
 const TAG_REACH = 0.63; // the tape is drawn at 3x, so 2x exports keep a clean edge
 const tapePictures = new Map();
 const tagContext = document.createElement("canvas").getContext("2d");
@@ -381,11 +384,11 @@ function tapePicture(shape, colour) {
 
 function createTimeTag(text, key) {
   // Before the fonts are in there is nothing to measure by; the guide measures again once they are.
-  const type = tagType ?? { font: '166 38px "Barlow GX Normal", Barlow, sans-serif', size: 38, figuresBaseline: 35, titleBaseline: 45 };
+  const type = tagType ?? { font: '166 38px "Barlow GX Condensed", "Barlow Condensed", sans-serif', size: 38, figuresBaseline: 35, titleBaseline: 45 };
   tagContext.font = type.font;
   const fullWidth = tagContext.measureText(text).width;
   // A time too long for its column (it should only ever be a time) is set smaller until its tape fits.
-  const size = Math.max(24, Math.min(type.size, DESIGN.timeWidth / (fullWidth / type.size + TAG_REACH)));
+  const size = Math.max(24, Math.min(type.size, DESIGN.timeWidth / (fullWidth / type.size + TAG_INSET + TAG_REACH)));
   const scale = size / type.size;
   tagContext.font = type.font.replace(`${type.size}px`, `${size}px`);
   const width = tagContext.measureText(text).width;
@@ -394,10 +397,10 @@ function createTimeTag(text, key) {
 
   const time = document.createElement("time");
   time.className = "guide-event__time";
-  // The lettering starts on the margin and the tape overhangs it; the figures stand on the title's baseline.
+  // The figures start TAG_INSET in from the margin, so the tape's square end stands on it; they stand on the title's baseline.
   time.style.width = `${shape.width}px`;
   time.style.height = `${shape.height}px`;
-  time.style.marginLeft = `${-shape.textX}px`;
+  time.style.marginLeft = `${TAG_INSET * size - shape.textX}px`;
   time.style.marginTop = `${type.titleBaseline - shape.baseline}px`;
   const tape = document.createElement("img");
   tape.className = "guide-event__tape";
@@ -685,7 +688,7 @@ async function waitForFonts() {
 
 // Both GX faces, at weights the artwork uses. If either failed to load, the browser would fall
 // back to static Barlow at these weights, which are all under 400, and draw the guide in Thin.
-const GUIDE_FONTS = ['168 47px "Barlow GX Normal"', '100 42px "Barlow GX Condensed"'];
+const GUIDE_FONTS = ['168 47px "Barlow GX Normal"', '100 42px "Barlow GX Condensed"', '166 38px "Barlow GX Condensed"', '141 36px "Barlow GX Condensed"'];
 
 async function ensureGuideFonts() {
   if (!document.fonts?.load) return;

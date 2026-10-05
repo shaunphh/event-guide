@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { seedForTag, timeTagShape } from "../core.js";
+import { seedForTag, TAG_INSET, timeTagShape } from "../core.js";
 
 const inside = (point, polygon) => {
   let hit = false;
@@ -31,6 +31,13 @@ test("time tags are cut around the time, each event its own cut, and never cut i
     }
   }
   assert.ok(shapes.size > 60, `only ${shapes.size} different cuts`);
+});
+
+test("the cut is on the tag's free end, so set TAG_INSET in, no tape crosses the margin", () => {
+  for (let seed = 1; seed <= 3000; seed += 1) {
+    const tag = timeTagShape({ text: "00:00", width: 79.7, capHeight: 26.6, size: 38, seed });
+    assert.ok(tag.textX <= TAG_INSET * 38, `seed ${seed}: the tape reaches ${tag.textX - TAG_INSET * 38}px past the margin`);
+  }
 });
 
 test("a tag keeps its cut: the same event and time always give the same seed", () => {

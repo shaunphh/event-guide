@@ -535,13 +535,18 @@ export function seedForTag(key) {
   return ((hash >>> 0) % 4294967294) + 1;
 }
 
+/** How far in from the margin a time's figures start, in ems of its size: the most tape the tag's
+ *  square left end takes (0.374em over 3,000 cuts), so no tape crosses the margin. */
+export const TAG_INSET = 0.375;
+
 /**
  * The tag's tape and where its time sits, in px from the tag's top-left corner, for a time
- * `width` px wide whose figures stand `capHeight` px tall at `size` px.
+ * `width` px wide whose figures stand `capHeight` px tall at `size` px. The cut is on the tag's
+ * free (right) end, as on Tape Type's eyebrows (5 Oct 2026), so its left end stands square on the margin.
  */
 export function timeTagShape({ text, width, capHeight, size, seed }) {
   const shape = buildShape(
-    { ...defaults, headline: text, style: "feature", perLine: false, align: "left", mode: "clean", seed, fontSize: size, hugStrength: 1, rotationVariance: 0 },
+    { ...defaults, headline: text, style: "feature", perLine: false, align: "left", mode: "clean", preferredEdge: "right", seed, fontSize: size, hugStrength: 1, rotationVariance: 0 },
     [text],
     [width],
     [],

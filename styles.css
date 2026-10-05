@@ -58,6 +58,9 @@
   --guide-time-size: 38px;
   --guide-time-width: 125px;
   --guide-column-gap: 20px;
+  /* Condensed again (5 Oct 2026), with the tape kept inside the margin: the column fits 00:00 with
+     its inset and the biggest cut. */
+  --guide-time-width: 118px;
   --guide-event-title-size: 44px;
   --guide-event-meta-size: 38px;
   --guide-event-title-size: 46px;
@@ -1054,10 +1057,6 @@ input[name="export-scale"] + span {
      in a full week (25, not 24). The shared tokens' guide-footer-guard. */
   padding-bottom: var(--ad-guide-footer-guard);
   overflow: hidden;
-  /* The list clips whatever runs past it, so it reaches 24px into the page's side padding: room
-     for the time tags' tape to overhang the margin, as Tape Type's labels do. Its words don't move. */
-  margin-left: -24px;
-  padding-left: 24px;
 }
 
 .guide-event {
@@ -1072,8 +1071,10 @@ input[name="export-scale"] + span {
   /* Every AD tag is ExtraBold on tape with Tape Type's clean cut (2 Oct 2026). A time is Tape
      Type's inside label, as Guide Studio's page numbers are: app.js cuts each tape around its time
      with Tape Type's own generator (timeTagShape in core.js, vendor/tape.js) and sizes and places
-     each tag: the lettering on the page margin, the tape overhanging it, the figures on the title's
-     baseline. Before this the times were Condensed, centred in an 84 × 52 box. The tape is a PNG
+     each tag: the figures on the title's baseline. Before this the times were Condensed, centred in
+     an 84 × 52 box. Since 5 Oct 2026 they're Condensed again, ExtraBold, and the tape's square left
+     end stands on the margin with the cut on its free end (it overhung the margin for three days,
+     too near the edge in the feed). The tape is a PNG
      because html2canvas draws neither clip-path nor masks, and Safari won't save an export that
      drew an SVG picture from a data: URL. */
   position: relative;
@@ -1091,7 +1092,7 @@ input[name="export-scale"] + span {
 .guide-event__time-text {
   position: absolute;
   color: var(--guide-ink);
-  font-family: "Barlow", Arial, sans-serif;
+  font-family: "Barlow Condensed", sans-serif;
   font-size: var(--guide-time-size);
   font-weight: 800;
   line-height: 1;
@@ -1196,11 +1197,13 @@ input[name="export-scale"] + span {
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  /* The AD footer style, shared with Guide Studio (2 Oct 2026): Bold, normal width, 31px, the meta grey. */
+  /* The AD footer style, shared with Guide Studio (2 Oct 2026): Bold, normal width, 31px, the meta grey.
+     Condensed again since 5 Oct 2026, at 36px, where space is at a premium. */
   font-family: "Barlow", Arial, sans-serif;
   font-size: var(--ad-footer-size);
   font-weight: 700;
   letter-spacing: 0;
+  font-family: "Barlow Condensed", sans-serif;
 }
 
 /* These native GX weights can be tuned one unit at a time in preview and export. */
@@ -1208,6 +1211,7 @@ input[name="export-scale"] + span {
   .guide-event__time-text {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
     font-weight: var(--ad-label-weight);
+    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
   }
 
   .guide-event__title {
@@ -1239,6 +1243,7 @@ input[name="export-scale"] + span {
     font-weight: 100;
     font-family: "Barlow GX Normal", "Barlow", sans-serif;
     font-weight: var(--ad-footer-weight);
+    font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
   }
 }
 
