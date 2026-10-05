@@ -10,6 +10,7 @@ import {
   groupEventsByDay,
   gvizTableToRows,
   normalizeRows,
+  offTheListing,
   parseCsv,
   rowsFromCsv,
   validatePagination,
@@ -263,4 +264,19 @@ test("date-range safeguard flags stale weeks but allows a current week", () => {
     now,
   );
   assert.equal(current.requiresConfirmation, false);
+});
+
+test("a cancelled or postponed event stays out of the guide; sold out still goes in", () => {
+  const csv = [
+    "DATE,NAME,LOCATION,START TIME,Instagram name,Approved,TOP PICKS,STATUS",
+    "FRIDAY (9),,,,,,,",
+    "10/09,Havana Roots,The Grand Social,19:30,thegrandsocialdublin,TRUE,FALSE,",
+    "10/09,Tuft Your Own Rug,Dublin Tufting,18:00,tuftingdublin,TRUE,FALSE,Cancelled",
+    "10/09,Arthur's Jazz Jam,Arthur's Pub,20:00,arthursbluesjazz,TRUE,FALSE,Postponed",
+    "10/09,Big Gig,Vicar Street,20:00,vicarstreetdublin,TRUE,FALSE,Sold out",
+  ].join("\n");
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 9, 5) });
+  assert.deepEqual(result.events.map((event) => event.title), ["Havana Roots", "Big Gig"]);
+  assert.deepEqual(result.ignored.map((row) => [row.title, row.reason]), [["Tuft Your Own Rug", "cancelled"], ["Arthur's Jazz Jam", "postponed"]]);
+  assert.deepEqual(["Cancelled", "canceled", "CANCELLED - moving to Nov", "Postponed", "Sold out", "", undefined].map(offTheListing), ["cancelled", "cancelled", "cancelled", "postponed", "", "", ""]);
 });

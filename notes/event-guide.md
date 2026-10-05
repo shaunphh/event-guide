@@ -68,3 +68,4 @@ After pushing to a new GitHub repository, choose **GitHub Actions** as the Pages
 - A row is valid when it has a parseable date and event name, and is approved when the `Approved` column exists.
 - Ticket fields that are descriptive text rather than an absolute HTTP(S) URL are retained as source text but are not treated as URLs.
 - Missing time is shown as `TBC` rather than interpreted as an all-day event.
+- A row whose `STATUS` says Cancelled or Postponed is left out and listed with the ignored rows (5 Oct 2026); the website shows such events marked instead, so the row stays in the Sheet. Sold out still goes in.
