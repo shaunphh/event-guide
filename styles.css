@@ -215,18 +215,6 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.version-pill {
-  padding: 7px 10px;
-  color: #c8c8c1;
-  border: 1px solid #4b4b47;
-  border-radius: 999px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .workspace {
   display: grid;
   grid-template-columns: minmax(320px, 386px) minmax(0, 1fr);
@@ -1308,10 +1296,6 @@ body.is-exporting #export-all {
 @media (max-width: 480px) {
   .app-header {
     min-height: 68px;
-  }
-
-  .version-pill {
-    display: none;
   }
 
   .app-brand__mark {

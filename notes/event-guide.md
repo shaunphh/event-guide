@@ -16,7 +16,7 @@ A small, static prototype that turns Alternative Dublin's weekly Google Sheet in
 - Shows every ignored row and the reason it was left out.
 - Flags implausibly old, future, or overly broad date ranges and requires a human confirmation before export.
 - Shows the local time of the most recent successful Sheet refresh.
-- Exports one page as PNG or every page in a ZIP at either 1080 × 1350 (1×) or 2160 × 2700 (2×).
+- Exports one page as PNG or every page in a ZIP at either 1080 × 1350 (1×) or 2160 × 2700 (2×). Pages are named `01-monday.png`, and at 2× `01-monday@2x.png`; the ZIP takes the same `@2x` suffix (18 Oct 2026, the suffix every AD tool uses).
 
 ## Run locally
 
@@ -47,7 +47,7 @@ npm test
 npm run build
 ```
 
-The build copies only the static production files into `dist/`.
+The build copies only the static production files into `dist/`, leaving out `assets/fonts/BarlowGX.ttf`, the master the two instances are cut from (18 Oct 2026).
 
 ## GitHub Pages
 

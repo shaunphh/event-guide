@@ -886,7 +886,7 @@ async function exportAllPages() {
         DOM.exportStatus.textContent = `Packing ZIP… ${Math.round(metadata.percent)}%`;
       },
     );
-    downloadBlob(blob, scale === 2 ? "alternative-dublin-event-guide-2x.zip" : "alternative-dublin-event-guide.zip");
+    downloadBlob(blob, scale === 2 ? "alternative-dublin-event-guide@2x.zip" : "alternative-dublin-event-guide.zip");
     DOM.exportStatus.textContent = `${state.pages.length} PNGs exported at ${DESIGN.pageWidth * scale} × ${DESIGN.pageHeight * scale}px.`;
   } catch (error) {
     DOM.exportStatus.textContent = error.message;
