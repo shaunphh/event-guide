@@ -18,7 +18,7 @@
         "src/assets/swipe-arrow.svg"
       ]
     },
-    "synced": "2026-10-02",
+    "synced": "2026-10-18",
     "about": "The values every Alternative Dublin tool shares. Tape Type keeps this file; the event guide, Guide Studio and Good Eye copy it with their sync scripts. Change a value here, then sync each tool. Decided by Shaun on 2 October 2026."
   },
   "color": {
@@ -104,19 +104,19 @@
           },
           {
             "name": "eyebrow",
-            "fontSize": "41px",
+            "fontSize": "44px",
             "lineHeight": 1,
             "fontWeight": 166,
             "sample": "BREAKING",
-            "usage": "The tag seated on a cover's first line: ExtraBold capitals, 34–41px (nine tenths of the published 38–46), on clean-cut `yellow` tape in `dark`."
+            "usage": "The tag seated on a cover's first line: ExtraBold capitals at the cover-tag size, 44px (41 until 18 October 2026, when every cover tag became one size: this and Guide Studio's date strip), shrinking to fit, on clean-cut `yellow` tape in `dark`."
           },
           {
             "name": "date-strip",
-            "fontSize": "48px",
+            "fontSize": "44px",
             "lineHeight": 1,
             "fontWeight": 166,
             "sample": "5 OCT – 11 OCT",
-            "usage": "Guide Studio's carousel covers: the dates as a tag on the headline's tape. ExtraBold capitals at 48px on clean-cut tape (`yellow` on Picks, `light` on What's New) in `dark`, turned slightly."
+            "usage": "Guide Studio's carousel covers: the dates as a tag on the headline's tape. ExtraBold capitals at the cover-tag size, 44px (48 until 18 October 2026), on clean-cut tape (`yellow` on Picks, `light` on What's New) in `dark`, turned slightly."
           },
           {
             "name": "supporting-line",
@@ -170,7 +170,7 @@
             "lineHeight": 1,
             "fontWeight": 166,
             "sample": "MEET THE ARTISTS",
-            "usage": "Tags on pages: Tape Type's label (on `light` tape), Guide Studio's page numbers and the event guide's times (on `yellow`). ExtraBold capitals, 38px, `dark`, on tape with the clean cut, the lettering on the margin and the tape overhanging it."
+            "usage": "Tags on pages: Tape Type's label (on `light` tape), Guide Studio's page numbers and the event guide's times (on `yellow`). ExtraBold capitals, 38px, `dark`, on tape with the clean cut. Labels and page numbers set their lettering on the margin, the tape overhanging it; the event guide's times are Condensed, their tape's square end on the margin and the cut on the free end (since 5 October 2026)."
           }
         ]
       },
@@ -213,11 +213,11 @@
         "styles": [
           {
             "name": "footer",
-            "fontSize": "36px",
-            "lineHeight": "40px",
+            "fontSize": "42px",
+            "lineHeight": "47px",
             "fontWeight": 116,
             "sample": "Mon 14 Sep",
-            "usage": "Every page's footer: Condensed SemiBold, 36px, lines 40px apart, where space is at a premium (Bold at normal width, 31px, until 5 October 2026). Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
+            "usage": "Every page's footer: Condensed SemiBold, 42px, lines 47px apart (36 and 40 until 18 October 2026, when the details read too small on the family board; Bold at normal width, 31px, until 5 October). Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
           }
         ]
       }

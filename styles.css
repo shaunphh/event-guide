@@ -1150,7 +1150,8 @@ input[name="export-scale"] + span {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 15px;
+  /* 15px until 18 Oct 2026: the mark sat a touch apart from the wordmark on the family board. */
+  gap: 12px;
 }
 
 .guide-page__dublin-mark {
