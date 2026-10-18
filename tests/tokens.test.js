@@ -24,5 +24,5 @@ test("the guide's colours, sizes and weights come from the shared tokens", () =>
   for (const used of ["--ad-guide-title-weight", "--ad-guide-time-weight", "--ad-footer-weight", "--ad-footer-size", "--ad-guide-footer-guard"]) {
     assert.ok(styles.includes(`var(${used})`), used);
   }
-  assert.match(read("index.html"), /<link rel="stylesheet" href="vendor\/ad-tokens\.css" \/>\s*<link rel="stylesheet" href="styles\.css" \/>/);
+  // index.html is a redirect to the tools site now (19 Oct 2026); the guide itself lives there.
 });
