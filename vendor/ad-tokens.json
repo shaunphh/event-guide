@@ -32,12 +32,12 @@
       {
         "name": "yellow",
         "value": "#ffed1f",
-        "usage": "The brand yellow: tape behind headlines on dark covers, every tag (eyebrows, page numbers, time tags), and the logo and swipe arrow wherever it reads. Lettering on it is `dark`. On yellow tape or a yellow ground, a tag turns `light`."
+        "usage": "The brand yellow: the house tape of video covers (Ghost, the dark tape seen through, is the one alternative since 18 October 2026; never another colour, since the grid reads by it), every tag (eyebrows, page numbers, time tags), and the logo and swipe arrow wherever it reads. Lettering on it is `dark`. On yellow tape or a yellow ground, a tag turns `light`."
       },
       {
         "name": "light",
         "value": "#f0f0f0",
-        "usage": "The one white (there is no pure white): light pages, light tape, the inside page's label tape, and titles, highlights and marks on `dark`. Lettering on it is `dark`."
+        "usage": "The one white (there is no pure white): light pages, light tape (the house tape of post covers; Ghost, the dark tape seen through, is the one alternative since 18 October 2026), the inside page's label tape, and titles, highlights and marks on `dark`. Lettering on it is `dark`."
       },
       {
         "name": "dark",
@@ -94,9 +94,10 @@
             "name": "cover-headline",
             "fontSize": "90px",
             "lineHeight": 0.94,
+            "letterSpacing": "-0.02em",
             "fontWeight": 141,
             "sample": "How to Make the Most of a Weekend Visit to Dublin",
-            "usage": "Tape Type post and video covers: Bold, as typed (Title Case by default), the largest size from 90px down to 72px that fits, lines 0.94 apart, `dark` on `light` tape."
+            "usage": "Tape Type post and video covers: Bold, as typed (Title Case by default), the largest size from 90px down to 72px that fits, lines 0.94 apart, −2% tracking (none until 18 October 2026, when the grid's covers read a touch loose beside Guide Studio's −3% carousel covers; lines are fitted by their tracked widths, and the eyebrow keeps the font's spacing), `dark` on `light` tape, or `light` on Ghost tape (`tape-ghost`, 18 October 2026)."
           },
           {
             "name": "cover-carousel",
@@ -372,6 +373,11 @@
         "usage": "Tape Type and Good Eye lay 15% `dark` over every cover photo, under the artwork (a switch in Tape Type)."
       },
       {
+        "name": "tape-ghost",
+        "value": "0.6",
+        "usage": "Ghost tape (18 October 2026): Tape Type's third tape setting on post and video covers, beside the look's own. The headline's own tape silhouette, cut and padding as the light tape's, filled with `dark` at this opacity so the photo shows through, lettering `light`; the eyebrow keeps its yellow tape. Nothing follows the photo: the same ground on every cover, the one change for the grid. Guide Studio's foot scrim is `cover-foot-scrim`."
+      },
+      {
         "name": "cover-scrim",
         "value": "0.3",
         "usage": "Guide Studio's carousel covers start with a 30% scrim over the photos, adjustable."
@@ -388,7 +394,7 @@
       {
         "name": "cut-headline",
         "value": "rough",
-        "usage": "Post covers: the headline's tape has the rough cut, its wider strip at the bottom on Guide Studio's covers."
+        "usage": "Post covers: the headline's tape has the rough cut, its wider strip at the bottom on Guide Studio's covers. Partner posts (the Feature style, for partnerships and special posts, since 18 October 2026) stack capitals on torn strips instead."
       },
       {
         "name": "cut-tag",
