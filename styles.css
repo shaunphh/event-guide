@@ -86,10 +86,10 @@
   --guide-event-gap: var(--ad-guide-event-gap);
   --guide-event-title-size: var(--ad-guide-title-size);
   --guide-event-meta-size: var(--ad-guide-meta-size);
-  --guide-time-size: var(--ad-label-size);
+  --guide-time-size: var(--ad-guide-time-size);
   --guide-background: var(--ad-light);
   --guide-ink: var(--ad-dark);
-  --guide-grey: var(--ad-meta);
+  --guide-grey: var(--ad-meta-on-light);
   --guide-yellow: var(--ad-yellow);
   --guide-footer-ink: var(--ad-dark);
 }
@@ -1200,7 +1200,7 @@ input[name="export-scale"] + span {
 @supports (font-variation-settings: normal) {
   .guide-event__time-text {
     font-family: "Barlow GX Normal", "Barlow", Arial, sans-serif;
-    font-weight: var(--ad-label-weight);
+    font-weight: var(--ad-guide-time-weight);
     font-family: "Barlow GX Condensed", "Barlow Condensed", sans-serif;
   }
 

@@ -55,9 +55,14 @@
         "usage": "Story text on `light` pages (8:1 on `light`)."
       },
       {
-        "name": "meta",
+        "name": "meta-on-dark",
         "value": "#7f7c7c",
-        "usage": "Dates, venues, handles and footer details. 3.7:1 on `light` and 4.5:1 on `dark`, so only at 24px and up: every use is 31px or more."
+        "usage": "Dates, venues, handles and footer details on `dark` pages: Guide Studio's What's New story footers (4.5:1). Until 18 October 2026 it was `meta`, the one grey for details on either ground."
+      },
+      {
+        "name": "meta-on-light",
+        "value": "#666363",
+        "usage": "Dates, venues, handles and footer details on `light` pages: the event guide's venue lines and date, Guide Studio's footer details (5.2:1). #7f7c7c until 18 October 2026, when at 3.7:1 the guide's lines read soft next to the ink on the family board."
       }
     ]
   },
@@ -166,11 +171,11 @@
           },
           {
             "name": "label",
-            "fontSize": "38px",
+            "fontSize": "44px",
             "lineHeight": 1,
             "fontWeight": 166,
             "sample": "MEET THE ARTISTS",
-            "usage": "Tags on pages: Tape Type's label (on `light` tape), Guide Studio's page numbers and the event guide's times (on `yellow`). ExtraBold capitals, 38px, `dark`, on tape with the clean cut. Labels and page numbers set their lettering on the margin, the tape overhanging it; the event guide's times are Condensed, their tape's square end on the margin and the cut on the free end (since 5 October 2026)."
+            "usage": "Tags on pages: Tape Type's label (on `light` tape) and Guide Studio's page numbers (on `yellow`). ExtraBold capitals at the cover-tag size, 44px (38 until 18 October 2026, when every tag but the guide's times became one size), `dark`, on tape with the clean cut, the lettering on the margin and the tape overhanging it. The guide's times are `guide-time`, a size down."
           }
         ]
       },
@@ -191,10 +196,10 @@
             "family": "barlow-condensed",
             "fontSize": "42px",
             "lineHeight": 1,
-            "letterSpacing": "-0.03em",
-            "fontWeight": 116,
+            "letterSpacing": "0em",
+            "fontWeight": 108,
             "sample": "Arthur's Blues & Jazz Club @arthursbluesjazz",
-            "usage": "The venue and Instagram handle under each event: Condensed SemiBold (116; 100 until 18 October 2026, the lightest text in the family), −3% tracking, `meta`."
+            "usage": "The venue and Instagram handle under each event: the footer's face at its size and weight, Condensed at 108 (116 earlier on 18 October 2026, 100 before that, the lightest text in the family), zero tracking (−3% until 18 October 2026, when the letters touched and the lines read soft), `meta-on-light`."
           },
           {
             "name": "guide-wordmark",
@@ -204,6 +209,15 @@
             "fontWeight": 168,
             "sample": "EVENT GUIDE",
             "usage": "Beside the Dublin mark in the footer, in capitals, `dark`."
+          },
+          {
+            "name": "guide-time",
+            "family": "barlow-condensed",
+            "fontSize": "38px",
+            "lineHeight": 1,
+            "fontWeight": 166,
+            "sample": "11:00",
+            "usage": "The time tag on each event: the page tag (`label`) in Condensed, ExtraBold at 38px, a size under the other tags because it repeats down a list beside 47px titles (it took the label's size until 18 October 2026, when the label went to 44 and this stayed). On `yellow` with the clean cut, the tape's square end on the margin and the cut on the free end (since 5 October 2026)."
           }
         ]
       },
@@ -215,9 +229,9 @@
             "name": "footer",
             "fontSize": "42px",
             "lineHeight": "47px",
-            "fontWeight": 116,
+            "fontWeight": 108,
             "sample": "Mon 14 Sep",
-            "usage": "Every page's footer: Condensed SemiBold, 42px, lines 47px apart (36 and 40 until 18 October 2026, when the details read too small on the family board; Bold at normal width, 31px, until 5 October). Names and handles in ink, dates and details in `meta`, title case (Mon 14 Sep). Two handles stack, one to a line."
+            "usage": "Every page's footer: Condensed at 108, a notch under SemiBold (116 until the evening of 18 October 2026, when the firmer grey on light let the weight come down), 42px, lines 47px apart (36 and 40 until 18 October 2026, when the details read too small on the family board; Bold at normal width, 31px, until 5 October). Names and handles in ink, dates and details in the page's meta grey (`meta-on-light`, `meta-on-dark`), title case (Mon 14 Sep). Two handles stack, one to a line."
           }
         ]
       }
@@ -331,7 +345,7 @@
       {
         "name": "semibold",
         "value": "116",
-        "usage": "SemiBold, CSS 600: words in single stars, footers."
+        "usage": "SemiBold, CSS 600: words in single stars. Footers and the guide's venue lines sit a notch under, at 108 (since 18 October 2026)."
       },
       {
         "name": "bold",
