@@ -361,6 +361,11 @@
         "name": "cover-scrim",
         "value": "0.3",
         "usage": "Guide Studio's carousel covers start with a 30% scrim over the photos, adjustable."
+      },
+      {
+        "name": "cover-foot-scrim",
+        "value": "0.6",
+        "usage": "Guide Studio's What's New covers (18 October 2026): a dark gradient over the lowest 420px, clear at its top and this strong at the foot, under the supporting line and the arrow, so white words read whatever the photo is doing there."
       }
     ]
   },
