@@ -192,9 +192,9 @@
             "fontSize": "42px",
             "lineHeight": 1,
             "letterSpacing": "-0.03em",
-            "fontWeight": 100,
+            "fontWeight": 116,
             "sample": "Arthur's Blues & Jazz Club @arthursbluesjazz",
-            "usage": "The venue and Instagram handle under each event: Condensed at 100, −3% tracking, `meta`."
+            "usage": "The venue and Instagram handle under each event: Condensed SemiBold (116; 100 until 18 October 2026, the lightest text in the family), −3% tracking, `meta`."
           },
           {
             "name": "guide-wordmark",
@@ -257,8 +257,8 @@
       },
       {
         "name": "guide-padding-sides",
-        "value": "75px",
-        "usage": "Event guide pages: 75px at the sides and top (Shaun's own margins)."
+        "value": "80px",
+        "usage": "Event guide pages: 80px at the sides and top, the covers' safe area, so the family keeps two margins, this and the story pages' 56 (75, Shaun's own margin, until 18 October 2026; it stays broad so the page doesn't look cropped in the feed)."
       },
       {
         "name": "guide-padding-bottom",
