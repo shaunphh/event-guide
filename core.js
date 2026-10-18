@@ -439,7 +439,8 @@ export function formatBadgeTime(value) {
   if (!meridiem) return time || "TBC";
   let hours = Number(meridiem[1]) % 12;
   if (meridiem[3].toUpperCase() === "PM") hours += 12;
-  return `${String(hours).padStart(2, "0")}:${meridiem[2] || "00"}`;
+  // No leading zero (18 Oct 2026): the tape is cut to each time, and 9:00 should read narrower than 19:00.
+  return `${hours}:${meridiem[2] || "00"}`;
 }
 
 function formatDateRange(minDate, maxDate) {
@@ -562,7 +563,8 @@ export const TAG_INSET = 0.375;
  */
 export function timeTagShape({ text, width, capHeight, size, seed }) {
   const shape = buildShape(
-    { ...defaults, headline: text, style: "feature", perLine: false, align: "left", mode: "clean", preferredEdge: "right", seed, fontSize: size, hugStrength: 1, rotationVariance: 0 },
+    // The cut only adds (18 Oct 2026): the tape keeps its padding whole, and a clip or bite takes its room from tape pushed out beyond it.
+    { ...defaults, headline: text, style: "feature", perLine: false, align: "left", mode: "clean", preferredEdge: "right", seed, fontSize: size, hugStrength: 1, rotationVariance: 0, cutOutside: true },
     [text],
     [width],
     [],

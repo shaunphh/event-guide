@@ -245,7 +245,8 @@ test("guide display formatting matches the compact Figma labels", () => {
   assert.equal(formatFooterDate(monday), "Mon 10 Feb");
   assert.equal(formatBadgeTime("11:30 AM"), "11:30");
   assert.equal(formatBadgeTime("8:00 PM"), "20:00");
-  assert.equal(formatBadgeTime("12 AM"), "00:00");
+  assert.equal(formatBadgeTime("9:00 AM"), "9:00");
+  assert.equal(formatBadgeTime("12 AM"), "0:00");
   assert.equal(formatBadgeTime("TBC"), "TBC");
 });
 

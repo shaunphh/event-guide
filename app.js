@@ -308,10 +308,11 @@ function getSelectedEvents() {
 // off styles.css once the fonts are in (measureTagType), so the tags follow its tokens.
 const TAPE_PICTURE_SCALE = 3;
 // How far a tag's tape can reach past its last figure, in ems: its padding plus the biggest cut
-// (0.62em over 3,000 cuts). Its figures start TAG_INSET in from the margin (core.js), so no tape
-// crosses it (5 Oct 2026; till then the figures stood on the margin and the tape overhung it,
-// 11–24px nearer the page's edge). The time column (--guide-time-width) fits 00:00 at 38px with both.
-const TAG_REACH = 0.63; // the tape is drawn at 3x, so 2x exports keep a clean edge
+// (0.79em over 3,000 cuts since the cut only adds, 18 Oct 2026; 0.62 before). Its figures start
+// TAG_INSET in from the margin (core.js), so no tape crosses it (5 Oct 2026; till then the figures
+// stood on the margin and the tape overhung it, 11–24px nearer the page's edge). The time column
+// (--guide-time-width) fits 23:30, the widest time, at 38px with both.
+const TAG_REACH = 0.8; // the tape is drawn at 3x, so 2x exports keep a clean edge
 const tapePictures = new Map();
 const tagContext = document.createElement("canvas").getContext("2d");
 let tagType = null;

@@ -393,7 +393,7 @@
       {
         "name": "cut-tag",
         "value": "clean",
-        "usage": "Every tag (eyebrows, labels, page numbers, time tags): Tape Type's clean cut, each with its own seed, the foot kept flat where a tag sits on tape."
+        "usage": "Every tag (eyebrows, labels, page numbers, time tags): Tape Type's clean cut, each with its own seed, the foot kept flat where a tag sits on tape. Since 18 October 2026 the cut only adds (`cutOutside` in the geometry): the tape keeps its padding whole, and the cut's room is tape added beyond it."
       },
       {
         "name": "cut-video",

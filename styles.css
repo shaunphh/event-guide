@@ -61,6 +61,9 @@
   /* Condensed again (5 Oct 2026), with the tape kept inside the margin: the column fits 00:00 with
      its inset and the biggest cut. */
   --guide-time-width: 118px;
+  /* The cut only adds (18 Oct 2026), so the tape can reach 0.79em past the last figure: the column
+     fits 23:30, the widest time, at 38px with the inset and that reach. */
+  --guide-time-width: 126px;
   --guide-event-title-size: 44px;
   --guide-event-meta-size: 38px;
   --guide-event-title-size: 46px;
